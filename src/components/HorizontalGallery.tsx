@@ -1,63 +1,42 @@
 "use client";
 
 import Link from "next/link";
-import { Destination } from "@/types/destination";
+import { Spot } from "@/types/destination";
 
-const WIDTHS = [420, 280, 360, 320, 400, 300, 380, 340];
+const W = [420, 280, 360, 300, 400, 320, 380, 260, 340, 290, 410, 350];
+const AR = ["3/4", "4/3", "1/1", "4/5", "3/2", "4/3", "1/1", "3/4", "4/3", "3/2", "4/5", "1/1"];
 
-export function HorizontalGallery({
-  items,
-  title,
-  subtitle,
-}: {
-  items: Destination[];
-  title: string;
-  subtitle?: string;
-}) {
+export function HorizontalGallery({ items, title }: { items: Spot[]; title: string }) {
   return (
     <section>
-      <div className="max-w-[1440px] mx-auto px-[20px] md:px-[48px] mb-[32px]">
-        {subtitle && (
-          <p className="text-[11px] font-[--mono] tracking-[0.15em] uppercase text-dim mb-[8px]">{subtitle}</p>
-        )}
-        <div className="flex items-end justify-between">
-          <h2 className="font-[--serif] text-[26px] font-bold tracking-[-0.01em]">{title}</h2>
-          <Link href="/destinations" className="text-[13px] text-dim hover:text-dark transition-colors hidden md:block">
-            すべて見る →
-          </Link>
-        </div>
+      <div className="max-w-[1440px] mx-auto px-[20px] md:px-[48px] mb-[28px]">
+        <h2 className="serif text-[26px] font-bold tracking-[-0.01em]">{title}</h2>
       </div>
-
-      <div className="hscroll flex gap-[16px] px-[20px] md:px-[48px] pb-[8px]">
-        {items.map((dest, i) => {
-          const w = WIDTHS[i % WIDTHS.length];
-          return (
-            <Link
-              key={dest.id}
-              href={`/destinations/${dest.id}`}
-              className="hsnap group imgz block"
-              style={{ width: `${w}px`, minWidth: `${w}px` }}
-            >
-              {/* 写真 */}
-              <div className="relative rounded-[12px] overflow-hidden mb-[12px]"
-                style={{ aspectRatio: i % 3 === 0 ? "3/4" : i % 3 === 1 ? "4/3" : "1/1" }}>
-                <div className="absolute inset-0 bg-gradient-to-br from-navy/40 via-dark/20 to-dark/40" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-[16px] z-10">
-                  <p className="text-[11px] text-white/40 font-[--mono] mb-[2px]">{dest.area}</p>
-                  <p className="font-[--serif] text-[18px] text-white font-bold leading-[1.3]">{dest.name}</p>
+      <div className="hscroll flex gap-[14px] md:gap-[18px] px-[20px] md:px-[48px] pb-[8px]">
+        {items.map((s, i) => (
+          <Link key={s.id} href={`/destinations/${s.id}`}
+            className="hsnap group block"
+            style={{ width: `${W[i % W.length]}px`, minWidth: `${W[i % W.length]}px` }}>
+            <div className="relative rounded-[8px] overflow-hidden outline outline-1 outline-g2/40"
+              style={{ aspectRatio: AR[i % AR.length] }}>
+              <div className="absolute inset-0 bg-gradient-to-br from-accent/30 via-ink/10 to-ink/30 transition-transform duration-500 group-hover:scale-[1.05]" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+              {/* Text — hidden by default, slide up on hover */}
+              <div className="absolute inset-x-0 bottom-0 p-[16px] translate-y-[8px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 delay-150">
+                <div className="bg-black/20 backdrop-blur-sm rounded-[6px] p-[12px]">
+                  <p className="mono text-[10px] text-white/40 tracking-[0.1em] uppercase">{s.area}</p>
+                  <p className="serif text-[16px] text-white font-bold leading-[1.3] mt-[2px]">{s.title}</p>
+                  <p className="text-[11px] text-white/40 mt-[4px] line-clamp-1">{s.description}</p>
                 </div>
               </div>
-
-              {/* Meta — 画像の外 */}
-              <div className="flex items-center gap-[8px]">
-                <span className="text-[11px] text-dim">{dest.category[0]}</span>
-                <span className="w-[3px] h-[3px] rounded-full bg-mute" />
-                <span className="text-[11px] text-dim">{dest.budgetRange}</span>
-              </div>
-            </Link>
-          );
-        })}
+            </div>
+            <div className="flex items-center gap-[6px] mt-[8px] px-[2px]">
+              <span className="mono text-[11px] text-g4">{s.area}</span>
+              <span className="w-[3px] h-[3px] rounded-full bg-g3" />
+              <span className="text-[11px] text-g4">{s.tags[0]}</span>
+            </div>
+          </Link>
+        ))}
       </div>
     </section>
   );

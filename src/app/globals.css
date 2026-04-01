@@ -2,74 +2,60 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600&family=Noto+Serif+JP:wght@400;700&display=swap');
 
 :root {
-  --white: #ffffff;
-  --off: #f7f5f2;
-  --warm: #eee9e1;
-  --mute: #b5ada3;
-  --dim: #8a8279;
-  --dark: #2d2a26;
-  --black: #1a1815;
-  --navy: #1e3a5f;
+  --bg: #FAFAF8;
+  --fg: #1c1b19;
+  --ink: #2d2a26;
+  --g1: #f0ede8;
+  --g2: #d6d1c9;
+  --g3: #b0a99e;
+  --g4: #8a8279;
+  --g5: #5c564e;
+  --accent: #1e3a5f;
+  --accent2: #2a4f7a;
   --gold: #c8a46b;
-  --navy-light: #2a4f7a;
-  --serif: "Noto Serif JP", Georgia, serif;
-  --body: "Noto Sans JP", "Hiragino Sans", sans-serif;
-  --mono: "Inter", system-ui, sans-serif;
 }
 
 @theme inline {
-  --color-white: var(--white);
-  --color-off: var(--off);
-  --color-warm: var(--warm);
-  --color-mute: var(--mute);
-  --color-dim: var(--dim);
-  --color-dark: var(--dark);
-  --color-black: var(--black);
-  --color-navy: var(--navy);
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-ink: var(--ink);
+  --color-g1: var(--g1);
+  --color-g2: var(--g2);
+  --color-g3: var(--g3);
+  --color-g4: var(--g4);
+  --color-g5: var(--g5);
+  --color-accent: var(--accent);
+  --color-accent2: var(--accent2);
   --color-gold: var(--gold);
-  --color-navy-light: var(--navy-light);
-  --font-serif: var(--serif);
-  --font-body: var(--body);
-  --font-mono: var(--mono);
 }
 
 html { scroll-behavior: smooth; }
 
 body {
-  background: var(--off);
-  color: var(--dark);
-  font-family: var(--body);
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Noto Sans JP", "Hiragino Sans", sans-serif;
   font-size: 14px;
   line-height: 1.9;
   letter-spacing: 0.02em;
   -webkit-font-smoothing: antialiased;
 }
 
-::selection { background: var(--gold); color: var(--white); }
+::selection { background: var(--gold); color: #fff; }
 
-/* ── scroll container ── */
+.serif { font-family: "Noto Serif JP", Georgia, serif; }
+.mono { font-family: "Inter", system-ui, sans-serif; }
+
 .hscroll {
   overflow-x: scroll;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
 .hscroll::-webkit-scrollbar { display: none; }
-.hscroll { scrollbar-width: none; }
 .hsnap { scroll-snap-align: center; flex-shrink: 0; }
 
-/* ── hover img zoom ── */
-.imgz img, .imgz > div { transition: transform 0.6s cubic-bezier(0.22,1,0.36,1); }
-.imgz:hover img, .imgz:hover > div { transform: scale(1.03); }
-
-/* ── fade up on scroll (JS-free, using animation-timeline in future, for now simple) ── */
-@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-.afade { animation: fadeUp 0.7s ease-out both; }
-.afade2 { animation: fadeUp 0.7s ease-out 0.12s both; }
-.afade3 { animation: fadeUp 0.7s ease-out 0.24s both; }
-
-/* ── custom scrollbar desktop ── */
-@media(min-width:768px) {
-  ::-webkit-scrollbar { width:4px; }
-  ::-webkit-scrollbar-thumb { background:var(--warm); border-radius:9px; }
-}
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+@keyframes paperDrop { from{opacity:0;transform:scale(1.05) rotate(1deg)} to{opacity:1;transform:scale(1) rotate(0)} }
+.afade { animation: fadeUp .6s ease-out both; }
+.apaper { animation: paperDrop .4s ease-out both; }

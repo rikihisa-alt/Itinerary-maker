@@ -1,207 +1,216 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useEffect, useState, Suspense, useCallback } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { getDestinationById, getAllDestinations } from "@/lib/contentLoader";
-import { Itinerary, ItinerarySpot } from "@/types/itinerary";
-import { TimelineSpot } from "@/components/ItineraryTimeline";
+import { useItinerary, ItinSpot } from "@/store/itinerary";
+import { getSpotById, getAllSpots } from "@/lib/contentLoader";
 
-const CATS = ["観光","食事","移動","宿泊","休憩","その他"] as const;
+const CATS = ["観光", "食事", "移動", "宿泊", "休憩"] as const;
+const DOT: Record<string, string> = { 観光: "bg-accent", 食事: "bg-gold", 移動: "bg-g3", 宿泊: "bg-[#7b6b8a]", 休憩: "bg-[#6b8a6b]" };
 
 function Editor() {
   const sp = useSearchParams();
-  const [it, setIt] = useState<Itinerary>({
-    id: "new", title: "新しい旅のしおり",
-    days: [{ dayNumber: 1, spots: [], memo: "" }],
-    createdAt: new Date().toISOString(),
-  });
+  const store = useItinerary();
   const [editTitle, setEditTitle] = useState(false);
-  const [addForm, setAddForm] = useState<number|null>(null);
-  const [picker, setPicker] = useState<number|null>(null);
-  const [memo, setMemo] = useState<{di:number;t:string}|null>(null);
-  const [ns, setNs] = useState<Partial<ItinerarySpot>>({ time:"10:00", category:"観光" });
+  const [addForm, setAddForm] = useState<number | null>(null);
+  const [picker, setPicker] = useState<number | null>(null);
+  const [memo, setMemo] = useState<{ di: number; t: string } | null>(null);
+  const [ns, setNs] = useState({ name: "", time: "10:00", cat: "観光" });
   const [dq, setDq] = useState("");
+  const [dragState, setDragState] = useState<{ di: number; si: number } | null>(null);
+  const [justAdded, setJustAdded] = useState<string | null>(null);
 
-  const init = useState(false);
+  const initDone = useState(false);
   useEffect(() => {
-    if (init[0]) return;
+    if (initDone[0]) return;
     const id = sp.get("add") || sp.get("from");
     if (id) {
-      const d = getDestinationById(id);
-      if (d) {
-        setIt({
-          id:"new", title:`${d.name}の旅`, area:d.area,
-          days:[{ dayNumber:1, spots:[{ destinationId:d.id, name:d.name, time:"10:00", category:"観光", note:d.features[0]?.label }], memo:"" }],
-          createdAt: new Date().toISOString(),
-        });
-        init[1](true);
+      const s = getSpotById(id);
+      if (s) {
+        store.initFrom(`${s.title}の旅`, { spotId: s.id, name: s.title, time: "10:00" });
+        initDone[1](true);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const addDay = () => setIt(p => ({...p, days:[...p.days, {dayNumber:p.days.length+1, spots:[], memo:""}]}));
-  const rmDay = (di:number) => { if(it.days.length<=1) return; setIt(p => ({...p, days:p.days.filter((_,i)=>i!==di).map((d,i)=>({...d,dayNumber:i+1}))})); };
-  const addSpot = (di:number, s:ItinerarySpot) => setIt(p => ({...p, days:p.days.map((d,i)=>i===di?{...d,spots:[...d.spots,s].sort((a,b)=>a.time.localeCompare(b.time))}:d)}));
-  const rmSpot = (di:number, si:number) => setIt(p => ({...p, days:p.days.map((d,i)=>i===di?{...d,spots:d.spots.filter((_,j)=>j!==si)}:d)}));
-  const saveMemo = (di:number, m:string) => setIt(p => ({...p, days:p.days.map((d,i)=>i===di?{...d,memo:m}:d)}));
-
-  const doAdd = (di:number) => {
-    if(!ns.name) return;
-    addSpot(di, { name:ns.name, time:ns.time||"10:00", duration:ns.duration, category:ns.category as ItinerarySpot["category"], note:ns.note });
-    setNs({time:"10:00",category:"観光"}); setAddForm(null);
+  const doAdd = (di: number) => {
+    if (!ns.name) return;
+    store.addSpot(di, { name: ns.name, time: ns.time });
+    setJustAdded(ns.name);
+    setTimeout(() => setJustAdded(null), 400);
+    setNs({ name: "", time: "10:00", cat: "観光" });
+    setAddForm(null);
   };
 
-  const addDest = (di:number, id:string) => {
-    const d = getDestinationById(id);
-    if(!d) return;
-    addSpot(di, { destinationId:d.id, name:d.name, time:"10:00", category:"観光", note:d.features[0]?.label });
-    setPicker(null); setDq("");
+  const addFromDest = useCallback((di: number, id: string) => {
+    const s = getSpotById(id);
+    if (!s) return;
+    store.addSpot(di, { spotId: s.id, name: s.title, time: "10:00" });
+    setJustAdded(s.title);
+    setTimeout(() => setJustAdded(null), 400);
+    setPicker(null);
+    setDq("");
+  }, [store]);
+
+  const handleDragStart = (di: number, si: number) => setDragState({ di, si });
+  const handleDrop = (di: number, si: number) => {
+    if (dragState && dragState.di === di && dragState.si !== si) {
+      store.moveSpot(di, dragState.si, si);
+    }
+    setDragState(null);
   };
 
-  const dests = getAllDestinations().filter(d => !dq || d.name.includes(dq) || d.area.includes(dq));
-  const total = it.days.reduce((a,d) => a+d.spots.length, 0);
+  const dests = getAllSpots().filter((d) => !dq || d.title.includes(dq) || d.area.includes(dq));
+  const total = store.days.reduce((a, d) => a + d.spots.length, 0);
 
   return (
     <div className="pt-[80px] pb-[120px]">
-      <div className="max-w-[640px] mx-auto px-[20px] md:px-[40px]">
-        {/* Header */}
-        <div className="mb-[48px]">
-          <p className="text-[11px] font-[--mono] tracking-[0.15em] uppercase text-dim mb-[12px]">Itinerary</p>
+      <div className="max-w-[600px] mx-auto px-[20px] md:px-[36px]">
+        <div className="mb-[44px]">
+          <p className="mono text-[10px] tracking-[0.15em] uppercase text-g4 mb-[10px]">Itinerary</p>
           {editTitle ? (
-            <input value={it.title} onChange={e => setIt({...it, title:e.target.value})} onBlur={() => setEditTitle(false)}
-              onKeyDown={e => e.key==="Enter" && setEditTitle(false)} autoFocus
-              className="font-[--serif] text-[30px] md:text-[40px] font-bold tracking-[-0.02em] bg-transparent border-b-[2px] border-navy outline-none w-full pb-[4px]" />
+            <input value={store.title} onChange={(e) => store.setTitle(e.target.value)}
+              onBlur={() => setEditTitle(false)} onKeyDown={(e) => e.key === "Enter" && setEditTitle(false)} autoFocus
+              className="serif text-[28px] md:text-[36px] font-bold tracking-[-0.02em] bg-transparent border-b-[2px] border-accent outline-none w-full pb-[2px]" />
           ) : (
             <button onClick={() => setEditTitle(true)} className="text-left group w-full">
-              <h1 className="font-[--serif] text-[30px] md:text-[40px] font-bold tracking-[-0.02em] inline group-hover:text-navy transition-colors">{it.title}</h1>
+              <h1 className="serif text-[28px] md:text-[36px] font-bold tracking-[-0.02em] inline group-hover:text-accent transition-colors">{store.title}</h1>
             </button>
           )}
-          <p className="text-[12px] text-mute mt-[8px]">{it.days.length}日間 · {total}スポット</p>
+          <p className="mono text-[11px] text-g3 mt-[6px]">{store.days.length} days · {total} spots</p>
         </div>
 
-        {/* Days */}
-        <div className="space-y-[40px]">
-          {it.days.map((day, di) => (
+        <div className="space-y-[36px]">
+          {store.days.map((day, di) => (
             <div key={di}>
-              {/* Day header */}
-              <div className="flex items-center justify-between mb-[20px]">
-                <div className="flex items-center gap-[12px]">
-                  <span className="font-[--mono] text-[12px] font-medium text-navy">Day {day.dayNumber}</span>
-                  {day.date && <span className="text-[11px] text-mute">{day.date}</span>}
-                </div>
-                {it.days.length > 1 && (
-                  <button onClick={() => rmDay(di)} className="text-[11px] text-mute hover:text-[#c45d3e] transition-colors">削除</button>
+              <div className="flex items-center justify-between mb-[16px]">
+                <span className="mono text-[11px] font-medium text-accent">Day {day.dayNumber}</span>
+                {store.days.length > 1 && (
+                  <button onClick={() => store.removeDay(di)} className="text-[10px] text-g3 hover:text-[#c45d3e] transition-colors">削除</button>
                 )}
               </div>
 
-              {/* Timeline */}
-              <div className="bg-off rounded-[8px] p-[24px] md:p-[28px]" style={{ background: "linear-gradient(135deg, #f7f5f2 0%, #faf8f5 100%)" }}>
+              {/* Timeline — paper bg */}
+              <div className="rounded-[6px] p-[20px] md:p-[24px]" style={{ background: "linear-gradient(145deg, #f4f1ec, #faf8f5)" }}>
                 {day.spots.length > 0 ? (
-                  <div>
-                    {day.spots.map((s, si) => (
-                      <TimelineSpot key={si} spot={s} onRemove={() => rmSpot(di, si)} />
+                  <div className="space-y-[4px]">
+                    {day.spots.map((spot, si) => (
+                      <div key={si}
+                        draggable
+                        onDragStart={() => handleDragStart(di, si)}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={() => handleDrop(di, si)}
+                        className={`group flex gap-[16px] cursor-grab active:cursor-grabbing ${justAdded === spot.name ? "apaper" : ""}`}>
+                        {/* Left: time */}
+                        <div className="w-[44px] text-right pt-[1px] shrink-0">
+                          <span className="mono text-[12px] font-medium text-fg">{spot.time}</span>
+                        </div>
+                        {/* Center: line + dot */}
+                        <div className="flex flex-col items-center shrink-0">
+                          <div className={`w-[8px] h-[8px] rounded-full ${DOT["観光"]} border-[2px] border-[#f4f1ec] z-10`} />
+                          <div className="w-[1px] flex-1 bg-g2/60 min-h-[20px]" />
+                        </div>
+                        {/* Right: content */}
+                        <div className="flex-1 pb-[18px] -mt-[1px]">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="text-[13px] font-medium">{spot.name}</p>
+                              {spot.note && <p className="text-[11px] text-g4 mt-[1px]">{spot.note}</p>}
+                              {spot.spotId && (
+                                <Link href={`/destinations/${spot.spotId}`} className="text-[10px] text-accent hover:underline mt-[2px] inline-block">詳しく →</Link>
+                              )}
+                            </div>
+                            <button onClick={() => store.removeSpot(di, si)}
+                              className="opacity-0 group-hover:opacity-100 text-[10px] text-g3 hover:text-[#c45d3e] transition-all">✕</button>
+                          </div>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-[32px]">
-                    <p className="text-dim text-[13px]">スポットを追加しよう</p>
-                  </div>
+                  <p className="text-center text-g4 text-[12px] py-[28px]">スポットを追加しよう</p>
                 )}
 
-                {/* Memo */}
                 {day.memo && !memo && (
-                  <button onClick={() => setMemo({di, t:day.memo||""})}
-                    className="w-full text-left mt-[16px] border-l-[2px] border-gold pl-[12px] py-[4px]">
-                    <p className="text-[11px] text-dim mb-[2px]">メモ</p>
-                    <p className="text-[13px] text-dark whitespace-pre-line">{day.memo}</p>
+                  <button onClick={() => setMemo({ di, t: day.memo })}
+                    className="w-full text-left mt-[12px] border-l-[2px] border-gold pl-[10px] py-[3px]">
+                    <p className="text-[10px] text-g4">メモ</p>
+                    <p className="text-[12px] text-g5 whitespace-pre-line">{day.memo}</p>
                   </button>
                 )}
               </div>
 
-              {/* Actions */}
-              <div className="flex gap-[8px] mt-[12px]">
+              <div className="flex gap-[6px] mt-[10px]">
                 <button onClick={() => { setAddForm(di); setPicker(null); }}
-                  className="text-[12px] text-dim border border-warm px-[14px] py-[6px] rounded-full hover:border-dark/30 transition-colors">+ スポット</button>
+                  className="text-[11px] text-g4 border border-g2 px-[12px] py-[5px] rounded-full hover:border-ink/20 transition-colors">+ スポット</button>
                 <button onClick={() => { setPicker(di); setAddForm(null); }}
-                  className="text-[12px] text-navy border border-navy/20 px-[14px] py-[6px] rounded-full hover:bg-navy/5 transition-colors">観光地から追加</button>
-                <button onClick={() => setMemo({di, t:day.memo||""})}
-                  className="text-[12px] text-gold border border-gold/20 px-[14px] py-[6px] rounded-full hover:bg-gold/5 transition-colors">メモ</button>
+                  className="text-[11px] text-accent border border-accent/20 px-[12px] py-[5px] rounded-full hover:bg-accent/5 transition-colors">観光地から</button>
+                <button onClick={() => setMemo({ di, t: day.memo })}
+                  className="text-[11px] text-gold border border-gold/20 px-[12px] py-[5px] rounded-full hover:bg-gold/5 transition-colors">メモ</button>
               </div>
 
-              {/* Add form */}
               {addForm === di && (
-                <div className="mt-[12px] bg-white border border-warm rounded-[8px] p-[20px] afade">
-                  <div className="grid grid-cols-2 gap-[8px] mb-[8px]">
-                    <input type="time" value={ns.time||"10:00"} onChange={e => setNs({...ns, time:e.target.value})}
-                      className="bg-off border border-warm rounded-[6px] px-[12px] py-[8px] text-[13px]" />
-                    <select value={ns.category||"観光"} onChange={e => setNs({...ns, category:e.target.value as ItinerarySpot["category"]})}
-                      className="bg-off border border-warm rounded-[6px] px-[12px] py-[8px] text-[13px]">
-                      {CATS.map(c => <option key={c} value={c}>{c}</option>)}
+                <div className="mt-[10px] bg-white border border-g2 rounded-[6px] p-[16px] afade">
+                  <div className="grid grid-cols-2 gap-[6px] mb-[6px]">
+                    <input type="time" value={ns.time} onChange={(e) => setNs({ ...ns, time: e.target.value })}
+                      className="bg-bg border border-g2 rounded-[4px] px-[10px] py-[7px] text-[12px]" />
+                    <select value={ns.cat} onChange={(e) => setNs({ ...ns, cat: e.target.value })}
+                      className="bg-bg border border-g2 rounded-[4px] px-[10px] py-[7px] text-[12px]">
+                      {CATS.map((c) => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
-                  <input type="text" placeholder="スポット名" value={ns.name||""} onChange={e => setNs({...ns, name:e.target.value})}
-                    className="w-full bg-off border border-warm rounded-[6px] px-[12px] py-[8px] text-[13px] mb-[8px]" autoFocus />
-                  <input type="text" placeholder="メモ（任意）" value={ns.note||""} onChange={e => setNs({...ns, note:e.target.value})}
-                    className="w-full bg-off border border-warm rounded-[6px] px-[12px] py-[8px] text-[13px] mb-[12px]" />
-                  <div className="flex gap-[8px]">
-                    <button onClick={() => doAdd(di)} className="bg-navy text-white px-[20px] py-[8px] rounded-full text-[13px] font-medium">追加</button>
-                    <button onClick={() => setAddForm(null)} className="text-[13px] text-mute">キャンセル</button>
+                  <input type="text" placeholder="スポット名" value={ns.name} onChange={(e) => setNs({ ...ns, name: e.target.value })}
+                    className="w-full bg-bg border border-g2 rounded-[4px] px-[10px] py-[7px] text-[12px] mb-[8px]" autoFocus />
+                  <div className="flex gap-[6px]">
+                    <button onClick={() => doAdd(di)} className="bg-accent text-white px-[16px] py-[6px] rounded-full text-[12px]">追加</button>
+                    <button onClick={() => setAddForm(null)} className="text-[12px] text-g4">やめる</button>
                   </div>
                 </div>
               )}
 
-              {/* Picker */}
               {picker === di && (
-                <div className="mt-[12px] bg-white border border-warm rounded-[8px] p-[20px] max-h-[280px] overflow-y-auto afade">
-                  <input type="text" placeholder="名前・エリアで検索…" value={dq} onChange={e => setDq(e.target.value)}
-                    className="w-full bg-off border border-warm rounded-[6px] px-[12px] py-[8px] text-[13px] mb-[12px]" autoFocus />
-                  {dests.slice(0,8).map(d => (
-                    <button key={d.id} onClick={() => addDest(di, d.id)}
-                      className="w-full text-left py-[10px] border-b border-warm/60 hover:bg-off transition-colors flex justify-between">
-                      <div>
-                        <p className="text-[13px] font-medium">{d.name}</p>
-                        <p className="text-[11px] text-mute">{d.area} · {d.category[0]}</p>
-                      </div>
-                      <span className="text-[11px] text-navy">追加</span>
+                <div className="mt-[10px] bg-white border border-g2 rounded-[6px] p-[16px] max-h-[240px] overflow-y-auto afade">
+                  <input type="text" placeholder="名前・エリア…" value={dq} onChange={(e) => setDq(e.target.value)}
+                    className="w-full bg-bg border border-g2 rounded-[4px] px-[10px] py-[7px] text-[12px] mb-[8px]" autoFocus />
+                  {dests.slice(0, 6).map((d) => (
+                    <button key={d.id} onClick={() => addFromDest(di, d.id)}
+                      className="w-full text-left py-[8px] border-b border-g1/60 hover:bg-bg transition-colors flex justify-between">
+                      <div><p className="text-[12px] font-medium">{d.title}</p><p className="text-[10px] text-g3">{d.area}</p></div>
+                      <span className="text-[10px] text-accent">追加</span>
                     </button>
                   ))}
-                  <button onClick={() => setPicker(null)} className="text-[11px] text-mute mt-[8px]">閉じる</button>
+                  <button onClick={() => setPicker(null)} className="text-[10px] text-g3 mt-[6px]">閉じる</button>
                 </div>
               )}
             </div>
           ))}
         </div>
 
-        {/* Add day */}
-        <button onClick={addDay}
-          className="w-full mt-[24px] py-[16px] border border-dashed border-warm rounded-[8px] text-[13px] text-dim hover:text-navy hover:border-navy/30 transition-all">
-          + Day {it.days.length + 1}
+        <button onClick={store.addDay}
+          className="w-full mt-[20px] py-[14px] border border-dashed border-g2 rounded-[6px] text-[12px] text-g4 hover:text-accent hover:border-accent/30 transition-all">
+          + Day {store.days.length + 1}
         </button>
 
-        {/* Memo modal */}
         {memo && (
-          <div className="fixed inset-0 bg-black/20 z-50 flex items-center justify-center p-[20px]" onClick={() => setMemo(null)}>
-            <div className="bg-white rounded-[12px] p-[24px] max-w-[400px] w-full shadow-xl" onClick={e => e.stopPropagation()}>
-              <h3 className="font-[--serif] font-bold mb-[12px]">Day {memo.di+1} メモ</h3>
-              <textarea value={memo.t} onChange={e => setMemo({...memo, t:e.target.value})} placeholder="持ち物、注意事項…" rows={4}
-                className="w-full bg-off border border-warm rounded-[6px] p-[12px] text-[13px] resize-none focus:outline-none" autoFocus />
-              <div className="flex gap-[8px] mt-[12px]">
-                <button onClick={() => { saveMemo(memo.di, memo.t); setMemo(null); }} className="bg-navy text-white px-[20px] py-[8px] rounded-full text-[13px]">保存</button>
-                <button onClick={() => setMemo(null)} className="text-[13px] text-mute">キャンセル</button>
+          <div className="fixed inset-0 bg-black/15 z-50 flex items-center justify-center p-[20px]" onClick={() => setMemo(null)}>
+            <div className="bg-white rounded-[8px] p-[20px] max-w-[380px] w-full shadow-lg" onClick={(e) => e.stopPropagation()}>
+              <h3 className="serif font-bold text-[16px] mb-[10px]">Day {memo.di + 1} メモ</h3>
+              <textarea value={memo.t} onChange={(e) => setMemo({ ...memo, t: e.target.value })} placeholder="持ち物、注意事項…" rows={4}
+                className="w-full bg-bg border border-g2 rounded-[4px] p-[10px] text-[12px] resize-none focus:outline-none" autoFocus />
+              <div className="flex gap-[6px] mt-[10px]">
+                <button onClick={() => { store.setMemo(memo.di, memo.t); setMemo(null); }}
+                  className="bg-accent text-white px-[16px] py-[6px] rounded-full text-[12px]">保存</button>
+                <button onClick={() => setMemo(null)} className="text-[12px] text-g4">やめる</button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Bottom nav */}
-        <div className="mt-[56px] pt-[32px] border-t border-warm flex flex-col sm:flex-row gap-[12px]">
-          <Link href="/destinations" className="text-center border border-warm text-dim px-[24px] py-[10px] rounded-full text-[13px] hover:border-dark/30 transition-colors">
-            観光地を探して追加
-          </Link>
-          <Link href="/result" className="text-center bg-navy text-white px-[24px] py-[10px] rounded-full text-[13px] font-medium hover:bg-navy-light transition-colors">
-            旅を提案してもらう
+        <div className="mt-[48px] pt-[28px] border-t border-g1 flex flex-col sm:flex-row gap-[8px]">
+          <Link href="/destinations" className="text-center border border-g2 text-g4 px-[20px] py-[9px] rounded-full text-[12px] hover:border-ink/20 transition-colors">
+            観光地を探す
           </Link>
         </div>
       </div>
@@ -210,5 +219,5 @@ function Editor() {
 }
 
 export default function ItineraryPage() {
-  return <Suspense fallback={<div className="pt-[80px] px-[20px] text-dim">読み込み中…</div>}><Editor /></Suspense>;
+  return <Suspense fallback={<div className="pt-[80px] px-[20px] text-g4 text-[13px]">読み込み中…</div>}><Editor /></Suspense>;
 }

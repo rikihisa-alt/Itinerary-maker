@@ -2,135 +2,114 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { getAllDestinations } from "@/lib/contentLoader";
-import { AREA_LIST, CATEGORY_LIST, TAG_LIST } from "@/lib/helpers";
-import { Area, DestinationCategory, TravelTag } from "@/types/destination";
+import { getAllSpots, getAreas } from "@/lib/contentLoader";
 
 export default function DestinationsPage() {
-  const all = getAllDestinations();
-  const [area, setArea] = useState<Area | "">("");
-  const [cat, setCat] = useState<DestinationCategory | "">("");
-  const [tag, setTag] = useState<TravelTag | "">("");
+  const spots = getAllSpots();
+  const areas = getAreas();
+  const [area, setArea] = useState("");
   const [q, setQ] = useState("");
 
   const filtered = useMemo(() => {
-    let r = all;
-    if (area) r = r.filter((d) => d.area === area);
-    if (cat) r = r.filter((d) => d.category.includes(cat));
-    if (tag) r = r.filter((d) => d.tags.includes(tag));
-    if (q) r = r.filter((d) => d.name.includes(q) || d.description.includes(q) || d.prefecture.includes(q));
+    let r = spots;
+    if (area) r = r.filter((s) => s.area === area);
+    if (q) r = r.filter((s) => s.title.includes(q) || s.description.includes(q) || s.location.includes(q));
     return r;
-  }, [all, area, cat, tag, q]);
-
-  const clear = () => { setArea(""); setCat(""); setTag(""); setQ(""); };
-  const has = area || cat || tag || q;
+  }, [spots, area, q]);
 
   return (
-    <div className="pt-[80px]">
-      {/* Header */}
-      <div className="max-w-[1440px] mx-auto px-[20px] md:px-[48px] mb-[48px]">
-        <p className="text-[11px] font-[--mono] tracking-[0.15em] uppercase text-dim mb-[8px]">Destinations</p>
-        <h1 className="font-[--serif] text-[36px] md:text-[48px] font-bold tracking-[-0.02em] leading-[1.15]">観光地</h1>
-      </div>
+    <div className="pt-[80px] pb-[120px]">
+      <div className="max-w-[1440px] mx-auto px-[20px] md:px-[48px]">
+        <div className="mb-[40px]">
+          <p className="mono text-[10px] tracking-[0.15em] uppercase text-g4 mb-[6px]">Destinations</p>
+          <h1 className="serif text-[36px] md:text-[48px] font-bold tracking-[-0.02em] leading-[1.12]">観光地</h1>
+        </div>
 
-      {/* Filters */}
-      <div className="max-w-[1440px] mx-auto px-[20px] md:px-[48px] mb-[48px] space-y-[16px]">
-        <input type="text" placeholder="地名・キーワードで探す…" value={q} onChange={(e) => setQ(e.target.value)}
-          className="w-full max-w-[400px] bg-white border border-warm rounded-[8px] px-[16px] py-[10px] text-[14px] focus:outline-none focus:border-navy" />
+        <input type="text" placeholder="地名で探す…" value={q} onChange={(e) => setQ(e.target.value)}
+          className="w-full max-w-[360px] bg-white border border-g2 rounded-[6px] px-[14px] py-[9px] text-[13px] focus:outline-none focus:border-accent mb-[20px]" />
 
-        <Pills label="エリア" items={AREA_LIST} selected={area} onSelect={(v) => setArea(area === v ? "" : v as Area)} />
-        <Pills label="カテゴリ" items={[...CATEGORY_LIST]} selected={cat} onSelect={(v) => setCat(cat === v ? "" : v as DestinationCategory)} />
-        <Pills label="スタイル" items={[...TAG_LIST]} selected={tag} onSelect={(v) => setTag(tag === v ? "" : v as TravelTag)} />
-        {has && <button onClick={clear} className="text-[12px] text-navy hover:underline">クリア</button>}
-      </div>
+        <div className="flex gap-[6px] overflow-x-auto mb-[40px]" style={{ scrollbarWidth: "none" }}>
+          <button onClick={() => setArea("")}
+            className={`shrink-0 px-[14px] py-[5px] rounded-full text-[12px] transition-all ${!area ? "bg-ink text-white" : "bg-white text-g4 border border-g2"}`}>すべて</button>
+          {areas.map((a) => (
+            <button key={a} onClick={() => setArea(area === a ? "" : a)}
+              className={`shrink-0 px-[14px] py-[5px] rounded-full text-[12px] transition-all ${area === a ? "bg-ink text-white" : "bg-white text-g4 border border-g2"}`}>{a}</button>
+          ))}
+        </div>
 
-      <div className="max-w-[1440px] mx-auto px-[20px] md:px-[48px] pb-[120px]">
-        <p className="text-[12px] text-mute mb-[32px]">{filtered.length}件</p>
+        <p className="mono text-[11px] text-g3 mb-[24px]">{filtered.length} spots</p>
 
-        {filtered.length === 0 ? (
-          <p className="text-dim py-[80px] text-center">条件に合う場所が見つかりません</p>
-        ) : (
-          <div className="space-y-[48px]">
-            {/* Main feature */}
-            {filtered[0] && (
-              <Link href={`/destinations/${filtered[0].id}`} className="group imgz block">
-                <div className="relative rounded-[12px] overflow-hidden aspect-[21/9]">
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
-                  <div className="absolute inset-0 bg-gradient-to-br from-navy/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 p-[24px] md:p-[48px] z-10">
-                    <p className="text-[11px] font-[--mono] text-white/30 tracking-wider uppercase mb-[6px]">{filtered[0].area} — {filtered[0].prefecture}</p>
-                    <h2 className="font-[--serif] text-[26px] md:text-[40px] text-white font-bold leading-[1.2] group-hover:text-gold transition-colors mb-[8px]">{filtered[0].name}</h2>
-                    <p className="text-[13px] text-white/40 max-w-[400px] leading-[1.7]">{filtered[0].description}</p>
-                  </div>
+        {/* 非対称グリッド */}
+        <div className="space-y-[40px]">
+          {/* Hero */}
+          {filtered[0] && (
+            <Link href={`/destinations/${filtered[0].id}`} className="group block relative rounded-[8px] overflow-hidden outline outline-1 outline-g2/40" style={{ aspectRatio: "21/9" }}>
+              <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent transition-transform duration-500 group-hover:scale-[1.03]" />
+              <div className="absolute inset-0 bg-gradient-to-br from-accent/15 to-transparent" />
+              <div className="absolute bottom-0 left-0 p-[24px] md:p-[40px] z-10 max-w-[440px]">
+                <div className="flex items-center gap-[8px] mb-[6px]">
+                  <span className="mono text-[10px] text-white/30 tracking-wider uppercase">{filtered[0].area}</span>
+                  <span className="text-[10px] text-white/20">·</span>
+                  <span className="mono text-[10px] text-white/20">{filtered[0].stayDuration}min</span>
+                  <span className="text-[10px] text-white/20">·</span>
+                  <span className="text-[10px] text-white/20">{filtered[0].crowdLevel === "low" ? "混雑:低" : filtered[0].crowdLevel === "medium" ? "混雑:中" : "混雑:高"}</span>
                 </div>
-              </Link>
-            )}
+                <h2 className="serif text-[24px] md:text-[36px] text-white font-bold leading-[1.2] group-hover:text-gold transition-colors">{filtered[0].title}</h2>
+                <p className="text-[12px] text-white/30 mt-[6px]">{filtered[0].description}</p>
+              </div>
+            </Link>
+          )}
 
-            {/* 非対称2列 */}
-            {filtered.length > 1 && (
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-[16px]">
-                {filtered.slice(1, 3).map((d, i) => (
-                  <div key={d.id} className={i === 0 ? "md:col-span-7" : "md:col-span-5 md:pt-[48px]"}>
-                    <Link href={`/destinations/${d.id}`} className="group imgz block">
-                      <div className={`relative rounded-[12px] overflow-hidden ${i === 0 ? "aspect-[4/3]" : "aspect-[3/2]"}`}>
-                        <div className="absolute inset-0 bg-gradient-to-br from-dark/30 to-dark/10" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                        <div className="absolute bottom-0 p-[20px] z-10">
-                          <p className="text-[11px] font-[--mono] text-white/30">{d.area}</p>
-                          <h3 className="font-[--serif] text-[18px] md:text-[22px] text-white font-bold">{d.name}</h3>
-                        </div>
-                      </div>
-                      <p className="text-[13px] text-dim mt-[10px] leading-[1.8] line-clamp-2">{d.description}</p>
-                    </Link>
+          {/* 2col asymmetric */}
+          {filtered.length > 1 && (
+            <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-[14px]">
+              {filtered.slice(1, 3).map((s, i) => (
+                <Link key={s.id} href={`/destinations/${s.id}`}
+                  className={`group block relative rounded-[8px] overflow-hidden outline outline-1 outline-g2/40 ${i === 0 ? "md:row-span-2" : ""}`}
+                  style={{ aspectRatio: i === 0 ? "3/4" : "4/3", minHeight: "200px" }}>
+                  <div className="absolute inset-0 bg-gradient-to-br from-ink/25 via-accent/10 to-ink/20 transition-transform duration-500 group-hover:scale-[1.05]" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                  <div className="absolute bottom-0 p-[20px] z-10 translate-y-[6px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 delay-150">
+                    <div className="bg-black/20 backdrop-blur-sm rounded-[6px] p-[10px]">
+                      <p className="mono text-[10px] text-white/30">{s.area}</p>
+                      <p className="serif text-[16px] text-white font-bold">{s.title}</p>
+                      <p className="text-[11px] text-white/30 mt-[2px]">{s.description}</p>
+                    </div>
                   </div>
-                ))}
-              </div>
-            )}
+                  {/* Always visible label */}
+                  <div className="absolute top-[14px] left-[14px] z-10">
+                    <p className="serif text-[16px] text-white/80 font-bold">{s.title}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
 
-            {/* 線区切りリスト */}
-            {filtered.length > 3 && (
-              <div className="border-t border-warm">
-                {filtered.slice(3).map((d) => (
-                  <Link key={d.id} href={`/destinations/${d.id}`}
-                    className="group flex items-center gap-[16px] md:gap-[32px] py-[20px] border-b border-warm/60 hover:bg-white/40 transition-colors px-[4px]">
-                    <div className="hidden md:block w-[60px] shrink-0">
-                      <div className="w-[60px] h-[60px] rounded-[8px] bg-gradient-to-br from-dark/10 to-dark/5" />
+          {/* Line-separated list */}
+          {filtered.length > 3 && (
+            <div className="border-t border-g1">
+              {filtered.slice(3).map((s) => (
+                <Link key={s.id} href={`/destinations/${s.id}`}
+                  className="group flex items-center gap-[20px] py-[18px] border-b border-g1/60 hover:bg-white/40 transition-colors px-[4px] active:scale-[0.99]"
+                  style={{ transitionDelay: "0.15s" }}>
+                  <div className="w-[48px] h-[48px] rounded-[6px] bg-gradient-to-br from-accent/15 to-ink/10 shrink-0 hidden md:block" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-[6px] mb-[1px]">
+                      <span className="mono text-[10px] text-g3">{s.area}</span>
+                      <span className="text-[10px] text-g3">·</span>
+                      <span className="text-[10px] text-g3">{s.tags[0]}</span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-[8px] mb-[2px]">
-                        <span className="text-[11px] font-[--mono] text-mute">{d.area}</span>
-                        <span className="text-[11px] text-mute">·</span>
-                        <span className="text-[11px] text-mute">{d.category[0]}</span>
-                      </div>
-                      <h3 className="font-[--serif] text-[18px] font-bold group-hover:text-navy transition-colors">{d.name}</h3>
-                    </div>
-                    <div className="text-right shrink-0 hidden sm:block">
-                      <p className="text-[12px] text-mute">{d.budgetRange}</p>
-                      <p className="text-[11px] text-mute">{d.stayDuration[0]}</p>
-                    </div>
-                    {d.rating && <span className="text-[12px] font-[--mono] text-gold shrink-0">{d.rating}</span>}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function Pills({ label, items, selected, onSelect }: { label: string; items: string[]; selected: string; onSelect: (v: string) => void }) {
-  return (
-    <div>
-      <p className="text-[11px] text-dim mb-[6px]">{label}</p>
-      <div className="flex gap-[6px] overflow-x-auto pb-[4px]" style={{ scrollbarWidth: "none" }}>
-        {items.map((v) => (
-          <button key={v} onClick={() => onSelect(v)}
-            className={`shrink-0 px-[14px] py-[6px] rounded-full text-[12px] transition-all ${
-              selected === v ? "bg-dark text-white" : "bg-white text-dim border border-warm hover:border-dark/20"
-            }`}>{v}</button>
-        ))}
+                    <h3 className="serif text-[16px] font-bold group-hover:text-accent transition-colors truncate">{s.title}</h3>
+                  </div>
+                  <div className="text-right shrink-0 hidden sm:block">
+                    <p className="mono text-[11px] text-g3">{s.stayDuration}min</p>
+                    <p className="text-[10px] text-g3">{s.budget}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
