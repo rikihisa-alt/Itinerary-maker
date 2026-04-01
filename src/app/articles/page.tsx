@@ -22,54 +22,54 @@ export default function ArticlesPage() {
   }, [all, cat, tgt]);
 
   return (
-    <div className="max-w-[1400px] mx-auto px-5 md:px-10 py-10 md:py-20">
-      <div className="mb-12">
-        <div className="divider mb-4" />
-        <h1 className="text-display text-3xl md:text-5xl mb-3">記事</h1>
-        <p className="text-stone">読むと旅に出たくなる。情報じゃなく、体験を伝える。</p>
+    <div className="pt-[80px] pb-[120px]">
+      <div className="max-w-[1440px] mx-auto px-[20px] md:px-[48px] mb-[48px]">
+        <p className="text-[11px] font-[--mono] tracking-[0.15em] uppercase text-dim mb-[8px]">Articles</p>
+        <h1 className="font-[--serif] text-[36px] md:text-[48px] font-bold tracking-[-0.02em] leading-[1.15]">読むと、出たくなる。</h1>
       </div>
 
-      <div className="space-y-3 mb-10">
-        <div>
-          <p className="text-[11px] text-stone mb-1.5 font-medium tracking-wider">カテゴリ</p>
-          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-            {CATS.map((c) => (
-              <button key={c} onClick={() => setCat(cat === c ? "" : c)}
-                className={`shrink-0 px-4 py-1.5 rounded-full text-[13px] transition-all ${cat === c ? "bg-fg text-bg" : "bg-cream text-stone hover:bg-sand/60"}`}>{c}</button>
-            ))}
-          </div>
+      <div className="max-w-[1440px] mx-auto px-[20px] md:px-[48px] mb-[48px] space-y-[12px]">
+        <div className="flex gap-[6px] overflow-x-auto pb-[4px]" style={{ scrollbarWidth: "none" }}>
+          {CATS.map((c) => (
+            <button key={c} onClick={() => setCat(cat === c ? "" : c)}
+              className={`shrink-0 px-[14px] py-[6px] rounded-full text-[12px] transition-all ${cat === c ? "bg-dark text-white" : "bg-white text-dim border border-warm"}`}>{c}</button>
+          ))}
         </div>
-        <div>
-          <p className="text-[11px] text-stone mb-1.5 font-medium tracking-wider">ターゲット</p>
-          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-            {TGTS.map((t) => (
-              <button key={t} onClick={() => setTgt(tgt === t ? "" : t)}
-                className={`shrink-0 px-4 py-1.5 rounded-full text-[13px] transition-all ${tgt === t ? "bg-fg text-bg" : "bg-cream text-stone hover:bg-sand/60"}`}>{t}</button>
-            ))}
-          </div>
+        <div className="flex gap-[6px] overflow-x-auto pb-[4px]" style={{ scrollbarWidth: "none" }}>
+          {TGTS.map((t) => (
+            <button key={t} onClick={() => setTgt(tgt === t ? "" : t)}
+              className={`shrink-0 px-[14px] py-[6px] rounded-full text-[12px] transition-all ${tgt === t ? "bg-dark text-white" : "bg-white text-dim border border-warm"}`}>{t}</button>
+          ))}
         </div>
       </div>
 
-      <div className="space-y-5">
+      {/* 記事リスト — 最初だけ大きい、あとは線区切り */}
+      <div className="max-w-[900px] mx-auto px-[20px] md:px-[48px]">
         {filtered.map((a, i) => (
-          <Link key={a.id} href={`/articles/${a.slug}`} className="group block lift">
-            <article className={`rounded-2xl p-7 md:p-10 ${i === 0 ? "bg-ink text-cloud" : "bg-cream"}`}>
-              <div className="flex items-center gap-3 mb-4">
-                <span className={`text-[11px] font-medium px-3 py-1 rounded-full ${i === 0 ? "bg-accent text-white" : "bg-accent/10 text-accent"}`}>{a.category}</span>
-                <span className={`text-[11px] ${i === 0 ? "text-cloud/40" : "text-stone"}`}>{a.targetType}</span>
-                {a.readingTime && <span className={`text-[11px] ${i === 0 ? "text-cloud/40" : "text-stone"}`}>{a.readingTime}分</span>}
-                <span className={`text-[11px] ${i === 0 ? "text-cloud/30" : "text-stone/60"}`}>{formatDate(a.publishedAt)}</span>
+          <Link key={a.id} href={`/articles/${a.slug}`}
+            className={`group block ${i === 0 ? "mb-[48px]" : "py-[24px] border-b border-warm"}`}>
+            {i === 0 ? (
+              /* 最初の記事 — 大きく、背景色あり */
+              <div className="bg-navy text-white rounded-[12px] p-[28px] md:p-[40px]">
+                <div className="flex items-center gap-[8px] mb-[12px]">
+                  <span className="text-[11px] font-medium bg-gold text-white px-[8px] py-[2px] rounded-full">{a.category}</span>
+                  <span className="text-[11px] text-white/30">{a.targetType}</span>
+                  {a.readingTime && <span className="text-[11px] text-white/30 font-[--mono]">{a.readingTime}min</span>}
+                </div>
+                <h2 className="font-[--serif] text-[22px] md:text-[30px] font-bold leading-[1.3] group-hover:text-gold transition-colors mb-[12px]">{a.title}</h2>
+                <p className="text-[14px] text-white/40 leading-[1.9] max-w-[500px]">{a.description}</p>
               </div>
-              <h2 className={`font-editorial font-bold leading-snug transition-colors ${
-                i === 0 ? "text-2xl md:text-4xl group-hover:text-accent-soft" : "text-xl md:text-2xl group-hover:text-accent"
-              }`}>{a.title}</h2>
-              <p className={`mt-3 leading-relaxed ${i === 0 ? "text-cloud/50 max-w-2xl" : "text-stone"}`}>{a.description}</p>
-              <div className="flex gap-2 mt-5">
-                {a.tags.slice(0, 4).map((t) => (
-                  <span key={t} className={`text-[11px] ${i === 0 ? "text-cloud/30" : "text-stone/50"}`}>#{t}</span>
-                ))}
+            ) : (
+              /* それ以降 — 線区切りのテキストのみ */
+              <div>
+                <div className="flex items-center gap-[8px] mb-[6px]">
+                  <span className="text-[11px] text-navy bg-navy/5 px-[8px] py-[2px] rounded-full">{a.category}</span>
+                  <span className="text-[11px] text-mute">{a.targetType}</span>
+                  <span className="text-[11px] text-mute font-[--mono]">{formatDate(a.publishedAt)}</span>
+                </div>
+                <h3 className="font-[--serif] text-[18px] font-bold leading-[1.4] group-hover:text-navy transition-colors">{a.title}</h3>
               </div>
-            </article>
+            )}
           </Link>
         ))}
       </div>
