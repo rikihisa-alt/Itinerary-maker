@@ -8,20 +8,48 @@ import { TravelDiagnosis, TravelProposal } from "@/types/itinerary";
 import { Area } from "@/types/destination";
 import { AREA_LIST } from "@/lib/helpers";
 
-const RELATIONSHIPS = ["カップル", "友達", "家族", "一人", "夫婦", "同僚"] as const;
-const EXPERIENCE_TYPES = ["のんびり", "アクティブ", "バランス", "グルメ中心", "観光中心"] as const;
+const RELATIONSHIPS = [
+  { value: "カップル" as const, emoji: "💑", desc: "二人の距離が縮まる旅" },
+  { value: "友達" as const, emoji: "👯", desc: "笑いが止まらない旅" },
+  { value: "家族" as const, emoji: "👨‍👩‍👧", desc: "みんなが笑顔になる旅" },
+  { value: "一人" as const, emoji: "🧳", desc: "自分だけの時間に浸る旅" },
+  { value: "夫婦" as const, emoji: "👫", desc: "日常を離れる旅" },
+  { value: "同僚" as const, emoji: "🤝", desc: "気兼ねなく楽しむ旅" },
+];
+
+const EXPERIENCE_TYPES = [
+  { value: "のんびり" as const, emoji: "🌿", desc: "温泉、カフェ、ぼーっとする時間。" },
+  { value: "アクティブ" as const, emoji: "🏔", desc: "体を動かす。自然の中へ。" },
+  { value: "バランス" as const, emoji: "⚖️", desc: "観光もグルメもちょうどよく。" },
+  { value: "グルメ中心" as const, emoji: "🍽", desc: "食べることが旅の目的。" },
+  { value: "観光中心" as const, emoji: "📸", desc: "名所を自分の目で見たい。" },
+];
+
 const INTEREST_OPTIONS = [
-  "温泉", "自然", "歴史", "グルメ", "アート", "アクティビティ",
-  "街歩き", "絶景", "神社仏閣", "リゾート", "写真映え", "ローカル体験",
+  { label: "温泉", emoji: "♨️" }, { label: "自然", emoji: "🌳" },
+  { label: "歴史", emoji: "🏯" }, { label: "グルメ", emoji: "🍜" },
+  { label: "アート", emoji: "🎨" }, { label: "アクティビティ", emoji: "🚴" },
+  { label: "街歩き", emoji: "🚶" }, { label: "絶景", emoji: "🌅" },
+  { label: "神社仏閣", emoji: "⛩" }, { label: "リゾート", emoji: "🏖" },
+  { label: "写真映え", emoji: "📷" }, { label: "ローカル体験", emoji: "🎎" },
 ];
 
 export default function ResultPage() {
   const [step, setStep] = useState(0);
+  const [transitioning, setTransitioning] = useState(false);
   const [diagnosis, setDiagnosis] = useState<Partial<TravelDiagnosis>>({
     travelers: 2,
     interests: [],
   });
   const [proposal, setProposal] = useState<TravelProposal | null>(null);
+
+  const goNext = (nextStep: number) => {
+    setTransitioning(true);
+    setTimeout(() => {
+      setStep(nextStep);
+      setTransitioning(false);
+    }, 200);
+  };
 
   const toggleInterest = (interest: string) => {
     const current = diagnosis.interests || [];
@@ -33,140 +61,144 @@ export default function ResultPage() {
   };
 
   const handleSubmit = () => {
-    const full: TravelDiagnosis = {
-      dateRange: diagnosis.dateRange || { start: "", end: "" },
-      travelers: diagnosis.travelers || 2,
-      relationship: diagnosis.relationship || "カップル",
-      interests: diagnosis.interests || [],
-      experienceType: diagnosis.experienceType || "バランス",
-      budget: diagnosis.budget,
-      area: diagnosis.area,
-    };
-    const result = generateProposal(full);
-    setProposal(result);
-    setStep(99);
+    setTransitioning(true);
+    setTimeout(() => {
+      const full: TravelDiagnosis = {
+        dateRange: diagnosis.dateRange || { start: "", end: "" },
+        travelers: diagnosis.travelers || 2,
+        relationship: diagnosis.relationship || "カップル",
+        interests: diagnosis.interests || [],
+        experienceType: diagnosis.experienceType || "バランス",
+        budget: diagnosis.budget,
+        area: diagnosis.area,
+      };
+      const result = generateProposal(full);
+      setProposal(result);
+      setStep(99);
+      setTransitioning(false);
+    }, 600);
   };
 
-  // Step definitions
   const steps = [
     // Step 0: 関係性
-    <div key="rel" className="text-center">
-      <p className="text-accent text-sm font-medium mb-2">STEP 1 / 4</p>
-      <h2 className="text-3xl md:text-4xl font-bold mb-3">誰と行く？</h2>
-      <p className="text-muted mb-10">旅の相手で、刺さる場所が変わる。</p>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 max-w-lg mx-auto">
+    <div key="rel" className="text-center animate-fade-up">
+      <p className="text-accent text-xs font-medium tracking-[0.15em] uppercase mb-6">Step 1 of 4</p>
+      <h2 className="text-3xl md:text-5xl font-bold mb-3">誰と行く？</h2>
+      <p className="text-muted mb-12">旅の相手で、刺さる場所が変わる。</p>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-lg mx-auto">
         {RELATIONSHIPS.map((rel) => (
           <button
-            key={rel}
+            key={rel.value}
             onClick={() => {
-              setDiagnosis({ ...diagnosis, relationship: rel });
-              setStep(1);
+              setDiagnosis({ ...diagnosis, relationship: rel.value });
+              goNext(1);
             }}
-            className={`py-5 rounded-xl text-base font-medium transition-all ${
-              diagnosis.relationship === rel
-                ? "bg-foreground text-background scale-105"
-                : "bg-surface hover:bg-border"
+            className={`group py-6 px-4 rounded-2xl text-left transition-all hover:scale-[1.03] ${
+              diagnosis.relationship === rel.value
+                ? "bg-foreground text-background shadow-lg"
+                : "bg-surface hover:bg-border/70"
             }`}
           >
-            {rel}
+            <span className="text-2xl block mb-2">{rel.emoji}</span>
+            <span className="font-bold text-sm block">{rel.value}</span>
+            <span className={`text-xs block mt-1 ${
+              diagnosis.relationship === rel.value ? "text-background/50" : "text-muted"
+            }`}>{rel.desc}</span>
           </button>
         ))}
       </div>
     </div>,
 
     // Step 1: 体験タイプ
-    <div key="exp" className="text-center">
-      <p className="text-accent text-sm font-medium mb-2">STEP 2 / 4</p>
-      <h2 className="text-3xl md:text-4xl font-bold mb-3">どんな旅がしたい？</h2>
-      <p className="text-muted mb-10">気分で選んでいい。</p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
-        {EXPERIENCE_TYPES.map((exp) => {
-          const descs: Record<string, string> = {
-            のんびり: "温泉、カフェ、ぼーっとする時間。",
-            アクティブ: "体を動かす。自然の中へ。",
-            バランス: "観光もグルメもちょうどよく。",
-            グルメ中心: "食べることが旅の目的。",
-            観光中心: "名所を効率よく回りたい。",
-          };
-          return (
-            <button
-              key={exp}
-              onClick={() => {
-                setDiagnosis({ ...diagnosis, experienceType: exp });
-                setStep(2);
-              }}
-              className={`p-5 rounded-xl text-left transition-all ${
-                diagnosis.experienceType === exp
-                  ? "bg-foreground text-background scale-[1.02]"
-                  : "bg-surface hover:bg-border"
-              }`}
-            >
-              <p className="font-bold text-base mb-1">{exp}</p>
-              <p className={`text-sm ${diagnosis.experienceType === exp ? "text-background/60" : "text-muted"}`}>
-                {descs[exp]}
-              </p>
-            </button>
-          );
-        })}
+    <div key="exp" className="text-center animate-fade-up">
+      <p className="text-accent text-xs font-medium tracking-[0.15em] uppercase mb-6">Step 2 of 4</p>
+      <h2 className="text-3xl md:text-5xl font-bold mb-3">どんな旅がしたい？</h2>
+      <p className="text-muted mb-12">気分で選んでいい。</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto">
+        {EXPERIENCE_TYPES.map((exp) => (
+          <button
+            key={exp.value}
+            onClick={() => {
+              setDiagnosis({ ...diagnosis, experienceType: exp.value });
+              goNext(2);
+            }}
+            className={`group p-6 rounded-2xl text-left transition-all hover:scale-[1.02] ${
+              diagnosis.experienceType === exp.value
+                ? "bg-foreground text-background shadow-lg"
+                : "bg-surface hover:bg-border/70"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">{exp.emoji}</span>
+              <div>
+                <p className="font-bold">{exp.value}</p>
+                <p className={`text-xs mt-0.5 ${
+                  diagnosis.experienceType === exp.value ? "text-background/50" : "text-muted"
+                }`}>{exp.desc}</p>
+              </div>
+            </div>
+          </button>
+        ))}
       </div>
     </div>,
 
     // Step 2: 興味
-    <div key="int" className="text-center">
-      <p className="text-accent text-sm font-medium mb-2">STEP 3 / 4</p>
-      <h2 className="text-3xl md:text-4xl font-bold mb-3">気になるのは？</h2>
-      <p className="text-muted mb-10">複数選べる。直感でいい。</p>
-      <div className="flex flex-wrap justify-center gap-3 max-w-xl mx-auto mb-10">
+    <div key="int" className="text-center animate-fade-up">
+      <p className="text-accent text-xs font-medium tracking-[0.15em] uppercase mb-6">Step 3 of 4</p>
+      <h2 className="text-3xl md:text-5xl font-bold mb-3">気になるのは？</h2>
+      <p className="text-muted mb-12">いくつでも選べる。直感で。</p>
+      <div className="flex flex-wrap justify-center gap-3 max-w-xl mx-auto mb-12">
         {INTEREST_OPTIONS.map((interest) => {
-          const selected = (diagnosis.interests || []).includes(interest);
+          const selected = (diagnosis.interests || []).includes(interest.label);
           return (
             <button
-              key={interest}
-              onClick={() => toggleInterest(interest)}
-              className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
+              key={interest.label}
+              onClick={() => toggleInterest(interest.label)}
+              className={`px-5 py-3 rounded-full text-sm font-medium transition-all ${
                 selected
-                  ? "bg-foreground text-background scale-105"
-                  : "bg-surface hover:bg-border text-muted"
+                  ? "bg-foreground text-background shadow-lg scale-105"
+                  : "bg-surface hover:bg-border/70 text-muted hover:text-foreground"
               }`}
             >
-              {interest}
+              <span className="mr-1.5">{interest.emoji}</span>
+              {interest.label}
             </button>
           );
         })}
       </div>
       <button
-        onClick={() => setStep(3)}
+        onClick={() => goNext(3)}
         disabled={(diagnosis.interests || []).length === 0}
-        className="bg-accent text-white px-8 py-3 rounded-full font-medium hover:opacity-90 transition-opacity disabled:opacity-40"
+        className="bg-accent text-white px-10 py-4 rounded-full font-medium hover:shadow-xl hover:shadow-accent/30 transition-all disabled:opacity-30 disabled:hover:shadow-none"
       >
-        次へ
+        次へ →
       </button>
     </div>,
 
-    // Step 3: エリア（任意）+ 実行
-    <div key="area" className="text-center">
-      <p className="text-accent text-sm font-medium mb-2">STEP 4 / 4</p>
-      <h2 className="text-3xl md:text-4xl font-bold mb-3">行きたいエリアは？</h2>
-      <p className="text-muted mb-10">決まってなければ「おまかせ」でOK。</p>
-      <div className="flex flex-wrap justify-center gap-3 max-w-xl mx-auto mb-10">
+    // Step 3: エリア
+    <div key="area" className="text-center animate-fade-up">
+      <p className="text-accent text-xs font-medium tracking-[0.15em] uppercase mb-6">Step 4 of 4</p>
+      <h2 className="text-3xl md:text-5xl font-bold mb-3">行きたいエリアは？</h2>
+      <p className="text-muted mb-12">決まってなければ「おまかせ」で。</p>
+      <div className="flex flex-wrap justify-center gap-3 max-w-xl mx-auto mb-12">
         <button
           onClick={() => setDiagnosis({ ...diagnosis, area: undefined })}
-          className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
+          className={`px-6 py-3 rounded-full text-sm font-medium transition-all ${
             !diagnosis.area
-              ? "bg-foreground text-background"
-              : "bg-surface hover:bg-border text-muted"
+              ? "bg-foreground text-background shadow-lg"
+              : "bg-surface text-muted hover:bg-border/70"
           }`}
         >
-          おまかせ
+          🎲 おまかせ
         </button>
         {AREA_LIST.map((area) => (
           <button
             key={area}
             onClick={() => setDiagnosis({ ...diagnosis, area: area as Area })}
-            className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
+            className={`px-5 py-3 rounded-full text-sm font-medium transition-all ${
               diagnosis.area === area
-                ? "bg-foreground text-background"
-                : "bg-surface hover:bg-border text-muted"
+                ? "bg-foreground text-background shadow-lg"
+                : "bg-surface text-muted hover:bg-border/70"
             }`}
           >
             {area}
@@ -175,14 +207,15 @@ export default function ResultPage() {
       </div>
       <button
         onClick={handleSubmit}
-        className="bg-accent text-white px-10 py-4 rounded-full text-lg font-medium hover:opacity-90 transition-opacity"
+        className="group bg-accent text-white px-12 py-5 rounded-full text-lg font-medium hover:shadow-xl hover:shadow-accent/30 transition-all flex items-center gap-2 mx-auto"
       >
         この条件で提案してもらう
+        <span className="group-hover:translate-x-1 transition-transform">→</span>
       </button>
     </div>,
   ];
 
-  // Result view
+  // ── Result view ──
   if (step === 99 && proposal) {
     const mainDest = getDestinationById(proposal.main.destination);
     const alts = proposal.alternatives.map((a) => ({
@@ -194,31 +227,30 @@ export default function ResultPage() {
       .filter((a) => a !== undefined);
 
     return (
-      <div>
-        {/* メイン提案 - 大きく */}
-        <section className="bg-foreground text-background">
-          <div className="max-w-6xl mx-auto px-6 py-16 md:py-24">
-            <p className="text-accent-light text-sm font-medium mb-4">YOUR BEST MATCH</p>
-            <h1 className="text-4xl md:text-6xl font-bold mb-4">
+      <div className="animate-fade-up">
+        {/* Main proposal - hero */}
+        <section className="bg-foreground text-background relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10" style={{
+            backgroundImage: "radial-gradient(circle at 70% 30%, rgba(196,93,62,0.4) 0%, transparent 50%)"
+          }} />
+          <div className="relative max-w-6xl mx-auto px-5 md:px-8 py-16 md:py-28">
+            <p className="text-accent-light text-xs font-medium tracking-[0.2em] uppercase mb-6">Your Best Match</p>
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6">
               {mainDest?.name || "提案"}
             </h1>
-            <p className="text-lg md:text-xl text-background/60 max-w-2xl leading-relaxed mb-6">
+            <p className="text-lg md:text-xl text-background/50 max-w-2xl leading-relaxed mb-8">
               {proposal.main.story}
             </p>
             {mainDest && (
-              <div className="flex flex-wrap gap-4 mb-8">
+              <div className="flex flex-wrap gap-3 mb-6">
                 {mainDest.category.map((c) => (
-                  <span key={c} className="text-sm bg-background/10 px-4 py-1.5 rounded-full">
-                    {c}
-                  </span>
+                  <span key={c} className="text-sm bg-background/10 px-4 py-1.5 rounded-full">{c}</span>
                 ))}
-                <span className="text-sm text-background/50">{mainDest.budgetRange}</span>
-                <span className="text-sm text-background/50">{mainDest.stayDuration[0]}</span>
               </div>
             )}
             <div className="flex flex-wrap gap-3">
               {proposal.main.highlights.map((h) => (
-                <span key={h} className="text-sm bg-background/10 px-4 py-2 rounded-full text-background/70">
+                <span key={h} className="text-sm bg-background/5 border border-background/10 px-4 py-2 rounded-full text-background/60">
                   {h}
                 </span>
               ))}
@@ -226,33 +258,32 @@ export default function ResultPage() {
           </div>
         </section>
 
-        <div className="max-w-6xl mx-auto px-6 py-16">
-          {/* モデルコース */}
-          <section className="mb-16">
-            <h2 className="text-2xl font-bold mb-8">この旅はこう回るのが気持ちいい</h2>
-            <div className="space-y-8">
+        <div className="max-w-6xl mx-auto px-5 md:px-8 py-16">
+          {/* Model course */}
+          <section className="mb-20">
+            <h2 className="text-2xl md:text-3xl font-bold mb-10">この旅はこう回るのが気持ちいい</h2>
+            <div className="space-y-10">
               {proposal.main.itinerary.map((day) => (
                 <div key={day.dayNumber}>
-                  <h3 className="text-lg font-bold mb-4 text-accent">
-                    Day {day.dayNumber}
-                  </h3>
-                  <div className="relative pl-8 border-l-2 border-border space-y-4">
+                  <div className="flex items-center gap-3 mb-6">
+                    <span className="w-10 h-10 bg-accent rounded-full flex items-center justify-center text-white text-sm font-bold">
+                      {day.dayNumber}
+                    </span>
+                    <h3 className="text-lg font-bold">Day {day.dayNumber}</h3>
+                  </div>
+                  <div className="relative pl-10 border-l-2 border-border space-y-4 ml-5">
                     {day.spots.map((spot, si) => (
-                      <div key={si} className="relative">
-                        <div className="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-accent border-2 border-background" />
-                        <div className="bg-surface rounded-xl p-4">
+                      <div key={si} className="relative animate-slide-in" style={{ animationDelay: `${si * 0.05}s` }}>
+                        <div className="absolute -left-[29px] top-4 w-3.5 h-3.5 rounded-full bg-accent border-3 border-background" />
+                        <div className="bg-surface rounded-xl p-5">
                           <div className="flex items-center gap-3 mb-1">
                             <span className="text-sm font-bold text-accent">{spot.time}</span>
                             {spot.category && (
-                              <span className="text-xs bg-background px-2 py-0.5 rounded text-muted">
-                                {spot.category}
-                              </span>
+                              <span className="text-xs bg-background px-2 py-0.5 rounded text-muted">{spot.category}</span>
                             )}
+                            {spot.duration && <span className="text-xs text-muted">{spot.duration}</span>}
                           </div>
                           <p className="font-medium">{spot.name}</p>
-                          {spot.duration && (
-                            <p className="text-xs text-muted mt-1">所要時間: {spot.duration}</p>
-                          )}
                         </div>
                       </div>
                     ))}
@@ -262,86 +293,71 @@ export default function ResultPage() {
             </div>
           </section>
 
-          {/* 比較表 */}
-          <section className="mb-16">
-            <h2 className="text-2xl font-bold mb-8">比較して選ぶ</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-3 pr-4 text-muted font-medium"></th>
-                    <th className="text-left py-3 px-4 font-bold text-accent">
-                      {mainDest?.name}
-                      <span className="block text-xs font-normal text-muted">おすすめ</span>
-                    </th>
-                    {alts.map((a, i) => (
-                      <th key={i} className="text-left py-3 px-4 font-medium">
-                        {a.dest?.name || "—"}
+          {/* Comparison table */}
+          <section className="mb-20">
+            <h2 className="text-2xl md:text-3xl font-bold mb-10">比較して選ぶ</h2>
+            <div className="bg-surface rounded-2xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-4 px-6 text-muted font-medium w-28"></th>
+                      <th className="text-left py-4 px-6">
+                        <span className="font-bold text-accent text-base">{mainDest?.name}</span>
+                        <span className="block text-xs font-normal text-accent/60 mt-0.5">おすすめ</span>
                       </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {proposal.comparison.map((row) => (
-                    <tr key={row.label} className="border-b border-border/50">
-                      <td className="py-3 pr-4 text-muted">{row.label}</td>
-                      <td className="py-3 px-4 font-medium">{row.main}</td>
-                      <td className="py-3 px-4 text-muted">{row.alt1}</td>
-                      <td className="py-3 px-4 text-muted">{row.alt2}</td>
+                      {alts.map((a, i) => (
+                        <th key={i} className="text-left py-4 px-6 font-medium text-base">
+                          {a.dest?.name || "—"}
+                        </th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {proposal.comparison.map((row, ri) => (
+                      <tr key={row.label} className={ri < proposal.comparison.length - 1 ? "border-b border-border/50" : ""}>
+                        <td className="py-4 px-6 text-muted text-xs">{row.label}</td>
+                        <td className="py-4 px-6 font-medium">{row.main}</td>
+                        <td className="py-4 px-6 text-muted">{row.alt1}</td>
+                        <td className="py-4 px-6 text-muted">{row.alt2}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </section>
 
-          {/* サブ提案 */}
+          {/* Alternatives */}
           {alts.length > 0 && (
-            <section className="mb-16">
-              <h2 className="text-2xl font-bold mb-8">こっちもアリ</h2>
-              <div className="grid md:grid-cols-2 gap-6">
-                {alts.map(
-                  (alt, i) =>
-                    alt.dest && (
-                      <Link
-                        key={i}
-                        href={`/destinations/${alt.dest.id}`}
-                        className="group bg-surface rounded-2xl p-6 md:p-8 hover:shadow-lg transition-shadow"
-                      >
-                        <p className="text-xs text-muted mb-2">
-                          {alt.dest.area} / {alt.dest.prefecture}
-                        </p>
-                        <h3 className="text-xl font-bold mb-2 group-hover:text-accent transition-colors">
-                          {alt.dest.name}
-                        </h3>
-                        <p className="text-sm text-muted leading-relaxed mb-3">{alt.story.slice(0, 120)}...</p>
-                        <p className="text-sm text-accent">{alt.reason}</p>
-                      </Link>
-                    )
-                )}
+            <section className="mb-20">
+              <h2 className="text-2xl md:text-3xl font-bold mb-10">こっちもアリ</h2>
+              <div className="grid md:grid-cols-2 gap-5">
+                {alts.map((alt, i) => alt.dest && (
+                  <Link key={i} href={`/destinations/${alt.dest.id}`} className="group block">
+                    <div className="bg-surface rounded-2xl p-7 md:p-8 card-hover h-full">
+                      <p className="text-xs text-muted mb-2">{alt.dest.area} / {alt.dest.prefecture}</p>
+                      <h3 className="text-xl font-bold mb-3 group-hover:text-accent transition-colors">{alt.dest.name}</h3>
+                      <p className="text-sm text-muted leading-relaxed mb-4">{alt.story.slice(0, 120)}...</p>
+                      <p className="text-sm text-accent font-medium">{alt.reason}</p>
+                    </div>
+                  </Link>
+                ))}
               </div>
             </section>
           )}
 
-          {/* 関連記事 */}
+          {/* Related articles */}
           {relArticles.length > 0 && (
-            <section className="mb-16">
-              <h2 className="text-2xl font-bold mb-8">もっと深く知る</h2>
+            <section className="mb-20">
+              <h2 className="text-2xl md:text-3xl font-bold mb-10">もっと深く知る</h2>
               <div className="space-y-4">
                 {relArticles.map((article) => (
-                  <Link
-                    key={article.id}
-                    href={`/articles/${article.slug}`}
-                    className="group block bg-surface rounded-xl p-6 hover:bg-border/60 transition-colors"
-                  >
+                  <Link key={article.id} href={`/articles/${article.slug}`} className="group block bg-surface rounded-xl p-6 card-hover">
                     <div className="flex items-center gap-3 mb-2">
-                      <span className="text-xs font-medium text-accent bg-accent/10 px-3 py-1 rounded-full">
-                        {article.category}
-                      </span>
+                      <span className="text-xs font-medium text-accent bg-accent/10 px-3 py-1 rounded-full">{article.category}</span>
                     </div>
-                    <h3 className="font-bold text-lg group-hover:text-accent transition-colors">
-                      {article.title}
-                    </h3>
+                    <h3 className="font-bold text-lg group-hover:text-accent transition-colors">{article.title}</h3>
                     <p className="text-sm text-muted mt-2">{article.description}</p>
                   </Link>
                 ))}
@@ -350,16 +366,17 @@ export default function ResultPage() {
           )}
 
           {/* CTAs */}
-          <section className="flex flex-wrap gap-4 justify-center py-10 border-t border-border">
+          <section className="flex flex-col sm:flex-row gap-4 justify-center py-12 border-t border-border">
             <Link
               href={`/itinerary?from=${proposal.main.destination}`}
-              className="bg-accent text-white px-8 py-3 rounded-full font-medium hover:opacity-90 transition-opacity"
+              className="group bg-accent text-white px-8 py-4 rounded-full font-medium hover:shadow-xl hover:shadow-accent/30 transition-all flex items-center justify-center gap-2"
             >
               この旅のしおりを作る
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
             </Link>
             <button
               onClick={() => { setStep(0); setProposal(null); }}
-              className="bg-surface px-8 py-3 rounded-full font-medium hover:bg-border transition-colors"
+              className="bg-surface px-8 py-4 rounded-full font-medium hover:bg-border transition-colors"
             >
               条件を変えてもう一度
             </button>
@@ -369,30 +386,40 @@ export default function ResultPage() {
     );
   }
 
-  // Diagnosis steps
+  // ── Loading state ──
+  if (transitioning && step !== 99) {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        </div>
+      </div>
+    );
+  }
+
+  // ── Diagnosis steps ──
   return (
-    <div className="max-w-6xl mx-auto px-6 py-16 md:py-24 min-h-[70vh] flex flex-col justify-center">
-      {/* Progress */}
-      <div className="flex justify-center gap-2 mb-12">
+    <div className="max-w-6xl mx-auto px-5 md:px-8 py-16 md:py-24 min-h-[80vh] flex flex-col justify-center">
+      {/* Progress bar */}
+      <div className="flex justify-center gap-2 mb-16">
         {[0, 1, 2, 3].map((s) => (
-          <div
+          <button
             key={s}
-            className={`h-1 rounded-full transition-all ${
-              s <= step ? "bg-accent w-12" : "bg-border w-8"
+            onClick={() => s < step && goNext(s)}
+            className={`h-1.5 rounded-full transition-all ${
+              s === step ? "bg-accent w-16" : s < step ? "bg-accent/40 w-10 cursor-pointer" : "bg-border w-8"
             }`}
           />
         ))}
       </div>
 
-      {steps[step]}
+      <div className={`transition-opacity duration-200 ${transitioning ? "opacity-0" : "opacity-100"}`}>
+        {steps[step]}
+      </div>
 
-      {/* Back button */}
       {step > 0 && step < 99 && (
-        <div className="text-center mt-8">
-          <button
-            onClick={() => setStep(step - 1)}
-            className="text-sm text-muted hover:text-foreground transition-colors"
-          >
+        <div className="text-center mt-12">
+          <button onClick={() => goNext(step - 1)} className="text-sm text-muted hover:text-foreground transition-colors">
             ← 戻る
           </button>
         </div>
