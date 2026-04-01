@@ -1,99 +1,100 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
 
-// 足跡: topで配置（上が0）。delayは下の足跡ほど早い＝下から上に歩く
-// 2人分、左右にずらす。サイズ大きく。
 const STEPS = [
-  // person 1 (left) — 下から上へ (top大→小、delay早→遅)
-  { x: -80, top: 75, rot: -10, delay: 0,    sz: 1 },
-  { x: -70, top: 60, rot: 12,  delay: 0.28, sz: 1 },
-  { x: -85, top: 45, rot: -8,  delay: 0.56, sz: 1 },
-  { x: -65, top: 30, rot: 14,  delay: 0.84, sz: 1 },
-  { x: -80, top: 15, rot: -12, delay: 1.12, sz: 1 },
-  // person 2 (right) — 少し遅れて追いかける
-  { x: 80,  top: 78, rot: 8,   delay: 0.14, sz: 0.88 },
-  { x: 70,  top: 63, rot: -14, delay: 0.42, sz: 0.88 },
-  { x: 85,  top: 48, rot: 10,  delay: 0.70, sz: 0.88 },
-  { x: 65,  top: 33, rot: -10, delay: 0.98, sz: 0.88 },
-  { x: 80,  top: 18, rot: 12,  delay: 1.26, sz: 0.88 },
+  { x: -70, y: 82, rot: -10, d: 0 },
+  { x: -60, y: 68, rot: 12,  d: 0.22 },
+  { x: -75, y: 54, rot: -8,  d: 0.44 },
+  { x: -55, y: 40, rot: 14,  d: 0.66 },
+  { x: -70, y: 26, rot: -12, d: 0.88 },
+  { x: 70,  y: 80, rot: 8,   d: 0.11 },
+  { x: 60,  y: 66, rot: -14, d: 0.33 },
+  { x: 75,  y: 52, rot: 10,  d: 0.55 },
+  { x: 55,  y: 38, rot: -10, d: 0.77 },
+  { x: 70,  y: 24, rot: 12,  d: 0.99 },
 ];
 
-export function Intro({ onComplete }: { onComplete: () => void }) {
-  const [phase, setPhase] = useState<"walk" | "hole" | "done">("walk");
+export function Intro({ onDone }: { onDone: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [show, setShow] = useState(true);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase("hole"), 2000);
-    const t2 = setTimeout(() => setPhase("done"), 3200);
-    const t3 = setTimeout(() => onComplete(), 3400);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, [onComplete]);
+    if (!ref.current) return;
+    const el = ref.current;
+    const feet = el.querySelectorAll<SVGElement>(".foot");
+    const mask = el.querySelector<HTMLDivElement>(".mask")!;
+    const bg = el.querySelector<HTMLDivElement>(".bg")!;
 
-  if (phase === "done") return null;
+    const tl = gsap.timeline({
+      onComplete: () => { setShow(false); onDone(); },
+    });
+
+    // 1. 足跡が下から順に出現
+    feet.forEach((f, i) => {
+      tl.fromTo(f,
+        { opacity: 0, y: 30, scale: 0.8 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.35, ease: "back.out(1.7)" },
+        STEPS[i].d
+      );
+    });
+
+    // 2. 少し待つ
+    tl.to({}, { duration: 0.3 });
+
+    // 3. 全体をズーム
+    tl.to(bg, { scale: 1.4, duration: 0.6, ease: "power2.in" });
+
+    // 4. マスクの穴を広げる（黒が消えてページが見える）
+    tl.to(mask, {
+      "--r": "120",
+      duration: 0.8,
+      ease: "power3.inOut",
+    }, "-=0.3");
+
+  }, [onDone]);
+
+  if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-[100]">
-      {/* 黒背景 — hole phaseでclip-pathで穴を開ける */}
+    <div ref={ref} className="fixed inset-0 z-[200]">
+      {/* ページは背後に見える。この上に黒いマスクが乗っている */}
       <div
-        className="absolute inset-0 bg-[#1c1b19]"
+        className="mask absolute inset-0"
         style={{
-          clipPath: phase === "hole"
-            ? "circle(0% at 50% 50%)"
-            : "circle(100% at 50% 50%)",
-          transition: phase === "hole" ? "clip-path 1.0s cubic-bezier(0.22, 1, 0.36, 1)" : "none",
+          // @ts-expect-error CSS custom property
+          "--r": "0",
+          background: "#1c1b19",
+          clipPath: "circle(calc((100% - var(--r) * 1%) ) at 50% 45%)",
         }}
-      >
-        {/* 足跡 — walk中のみ表示 */}
-        {phase === "walk" && (
-          <div className="absolute inset-0">
-            {STEPS.map((fp, i) => (
-              <svg
-                key={i}
-                width={64 * fp.sz}
-                height={90 * fp.sz}
-                viewBox="0 0 64 90"
-                fill="none"
-                className="absolute left-1/2"
-                style={{
-                  top: `${fp.top}%`,
-                  marginLeft: `${fp.x - 32 * fp.sz}px`,
-                  transform: `rotate(${fp.rot}deg)`,
-                  opacity: 0,
-                  animation: `stepUp 0.4s ease-out ${fp.delay}s forwards`,
-                }}
-              >
-                {/* 指5本 */}
-                <ellipse cx="14" cy="8"  rx="7"  ry="8"  fill="white" fillOpacity="0.4" />
-                <ellipse cx="28" cy="5"  rx="6"  ry="7"  fill="white" fillOpacity="0.35" />
-                <ellipse cx="40" cy="6"  rx="5.5" ry="6.5" fill="white" fillOpacity="0.3" />
-                <ellipse cx="50" cy="11" rx="5"  ry="6"  fill="white" fillOpacity="0.25" />
-                <ellipse cx="56" cy="19" rx="4"  ry="5"  fill="white" fillOpacity="0.2" />
-                {/* 足の甲 */}
-                <ellipse cx="30" cy="42" rx="18" ry="24" fill="white" fillOpacity="0.25" />
-                {/* かかと */}
-                <ellipse cx="28" cy="76" rx="14" ry="11" fill="white" fillOpacity="0.2" />
-              </svg>
-            ))}
-          </div>
-        )}
-      </div>
+      />
 
-      <style>{`
-        @keyframes stepUp {
-          0% {
-            opacity: 0;
-            transform: rotate(var(--r, 0deg)) translateY(20px) scale(0.85);
-          }
-          50% {
-            opacity: 1;
-            transform: rotate(var(--r, 0deg)) translateY(-5px) scale(1.04);
-          }
-          100% {
-            opacity: 1;
-            transform: rotate(var(--r, 0deg)) translateY(0) scale(1);
-          }
-        }
-      `}</style>
+      {/* 足跡群 */}
+      <div className="bg absolute inset-0 flex items-center justify-center" style={{ transformOrigin: "50% 45%" }}>
+        {STEPS.map((s, i) => (
+          <svg
+            key={i}
+            className="foot absolute"
+            width="72" height="100" viewBox="0 0 72 100"
+            fill="none"
+            style={{
+              left: `calc(50% + ${s.x}px)`,
+              top: `${s.y}%`,
+              transform: `translate(-50%, -50%) rotate(${s.rot}deg)`,
+              opacity: 0,
+            }}
+          >
+            <ellipse cx="16" cy="10" rx="8" ry="9" fill="white" fillOpacity="0.4" />
+            <ellipse cx="32" cy="6"  rx="7" ry="8" fill="white" fillOpacity="0.35" />
+            <ellipse cx="46" cy="8"  rx="6" ry="7" fill="white" fillOpacity="0.3" />
+            <ellipse cx="56" cy="15" rx="5.5" ry="6.5" fill="white" fillOpacity="0.25" />
+            <ellipse cx="62" cy="24" rx="4.5" ry="5.5" fill="white" fillOpacity="0.2" />
+            <ellipse cx="34" cy="50" rx="20" ry="26" fill="white" fillOpacity="0.22" />
+            <ellipse cx="32" cy="86" rx="16" ry="12" fill="white" fillOpacity="0.18" />
+          </svg>
+        ))}
+      </div>
     </div>
   );
 }

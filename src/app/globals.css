@@ -2,17 +2,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600&family=Noto+Serif+JP:wght@400;700&display=swap');
 
 :root {
-  --bg: #FAFAF8;
+  --bg: #F5F3EE;
   --fg: #1c1b19;
   --ink: #2d2a26;
-  --g1: #f0ede8;
-  --g2: #d6d1c9;
-  --g3: #b0a99e;
-  --g4: #8a8279;
-  --g5: #5c564e;
+  --g1: #eae6de;
+  --g2: #d6d1c7;
+  --g3: #aea89e;
+  --g4: #847e74;
+  --g5: #5c574e;
   --accent: #1e3a5f;
-  --accent2: #2a4f7a;
-  --gold: #c8a46b;
+  --gold: #b89a5a;
 }
 
 @theme inline {
@@ -25,20 +24,20 @@
   --color-g4: var(--g4);
   --color-g5: var(--g5);
   --color-accent: var(--accent);
-  --color-accent2: var(--accent2);
   --color-gold: var(--gold);
 }
 
-html { scroll-behavior: smooth; }
+* { box-sizing: border-box; }
 
 body {
   background: var(--bg);
   color: var(--fg);
-  font-family: "Noto Sans JP", "Hiragino Sans", sans-serif;
+  font-family: "Noto Sans JP","Hiragino Sans",sans-serif;
   font-size: 14px;
   line-height: 1.9;
   letter-spacing: 0.02em;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 ::selection { background: var(--gold); color: #fff; }
@@ -46,16 +45,7 @@ body {
 .serif { font-family: "Noto Serif JP", Georgia, serif; }
 .mono { font-family: "Inter", system-ui, sans-serif; }
 
-.hscroll {
-  overflow-x: scroll;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
+/* Horizontal scroll */
+.hscroll { overflow-x: scroll; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
 .hscroll::-webkit-scrollbar { display: none; }
 .hsnap { scroll-snap-align: center; flex-shrink: 0; }
-
-@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
-@keyframes paperDrop { from{opacity:0;transform:scale(1.05) rotate(1deg)} to{opacity:1;transform:scale(1) rotate(0)} }
-.afade { animation: fadeUp .6s ease-out both; }
-.apaper { animation: paperDrop .4s ease-out both; }
