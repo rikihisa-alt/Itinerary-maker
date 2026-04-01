@@ -6,173 +6,123 @@ export function generateStaticParams() {
   return getAllDestinations().map((d) => ({ id: d.id }));
 }
 
-export default async function DestinationDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function DestinationPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const destination = getDestinationById(id);
-  if (!destination) notFound();
-
-  const relatedArticles = getArticlesForDestination(id);
+  const d = getDestinationById(id);
+  if (!d) notFound();
+  const articles = getArticlesForDestination(id);
 
   return (
     <div>
       {/* Hero */}
-      <section className="relative bg-foreground text-background overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-foreground/90 to-foreground/70" />
-        <div className="relative max-w-6xl mx-auto px-6 py-20 md:py-28">
-          <div className="flex items-center gap-2 mb-4">
-            <Link href="/destinations" className="text-background/40 hover:text-background/70 text-sm transition-colors">
-              観光地
-            </Link>
-            <span className="text-background/30">/</span>
-            <span className="text-background/60 text-sm">{destination.area}</span>
-            <span className="text-background/30">/</span>
-            <span className="text-background/60 text-sm">{destination.prefecture}</span>
+      <section className="bg-ink text-cloud relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/10 to-transparent" />
+        <div className="relative max-w-[1400px] mx-auto px-5 md:px-10 py-20 md:py-32">
+          <div className="flex items-center gap-2 mb-6 text-[11px] tracking-wider uppercase text-cloud/40">
+            <Link href="/destinations" className="hover:text-cloud/70 transition-colors">観光地</Link>
+            <span>/</span>
+            <span>{d.area}</span>
+            <span>/</span>
+            <span>{d.prefecture}</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">{destination.name}</h1>
-          <p className="text-lg md:text-xl text-background/60 max-w-2xl leading-relaxed">
-            {destination.description}
-          </p>
-          <div className="flex flex-wrap items-center gap-4 mt-6">
-            {destination.category.map((c) => (
-              <span key={c} className="text-sm bg-background/10 px-4 py-1.5 rounded-full">
-                {c}
-              </span>
+          <h1 className="text-display text-4xl md:text-6xl lg:text-7xl mb-6">{d.name}</h1>
+          <p className="text-lg text-cloud/50 max-w-2xl leading-relaxed">{d.description}</p>
+          <div className="flex flex-wrap gap-3 mt-8">
+            {d.category.map((c) => (
+              <span key={c} className="text-sm bg-cloud/10 px-4 py-1.5 rounded-full">{c}</span>
             ))}
-            {destination.rating && (
-              <span className="text-sm font-medium text-accent-light">
-                ★ {destination.rating}
-              </span>
-            )}
+            {d.rating && <span className="text-sm text-accent-soft">★ {d.rating}</span>}
           </div>
         </div>
       </section>
 
-      <div className="max-w-6xl mx-auto px-6 py-16">
-        {/* 基本情報バー */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16 -mt-8 relative z-10">
+      <div className="max-w-[1000px] mx-auto px-5 md:px-10">
+        {/* Info bar */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 -mt-8 relative z-10 mb-16">
           {[
-            { label: "予算目安", value: destination.budgetRange },
-            { label: "滞在期間", value: destination.stayDuration.join(" / ") },
-            { label: "ベストシーズン", value: destination.bestSeason.join("・") },
-            { label: "アクセス", value: destination.access || "—" },
-          ].map((item) => (
-            <div key={item.label} className="bg-surface rounded-xl p-5">
-              <p className="text-xs text-muted mb-1">{item.label}</p>
-              <p className="font-medium text-sm">{item.value}</p>
+            { l: "予算", v: d.budgetRange },
+            { l: "滞在", v: d.stayDuration.join(" / ") },
+            { l: "シーズン", v: d.bestSeason.join("・") },
+            { l: "アクセス", v: d.access || "—" },
+          ].map((x) => (
+            <div key={x.l} className="bg-cloud rounded-xl p-4 shadow-sm border border-sand/30">
+              <p className="text-[11px] text-stone mb-0.5">{x.l}</p>
+              <p className="text-sm font-medium">{x.v}</p>
             </div>
           ))}
         </div>
 
-        {/* ストーリー（longDescription） */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold mb-6">この場所の話をしよう</h2>
-          <div className="bg-surface rounded-2xl p-8 md:p-10">
-            <p className="text-base leading-[2] text-foreground/80">
-              {destination.longDescription}
-            </p>
-          </div>
+        {/* Story */}
+        <section className="mb-20">
+          <div className="divider mb-4" />
+          <h2 className="font-editorial text-2xl md:text-3xl font-bold mb-8">この場所の話</h2>
+          <p className="text-base leading-[2.2] text-fg/75">{d.longDescription}</p>
         </section>
 
-        {/* 体験（Features） - 非均一レイアウト */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold mb-6">ここでしかできない体験</h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            {destination.features.map((feature, i) => (
-              <div
-                key={feature.label}
-                className={`rounded-2xl p-6 md:p-8 ${
-                  i === 0
-                    ? "md:col-span-2 bg-foreground text-background"
-                    : "bg-surface"
-                }`}
-              >
-                <p className={`text-sm font-medium mb-2 ${i === 0 ? "text-accent-light" : "text-accent"}`}>
+        {/* Features */}
+        <section className="mb-20">
+          <div className="divider mb-4" />
+          <h2 className="font-editorial text-2xl md:text-3xl font-bold mb-8">ここでしかできない体験</h2>
+          <div className="space-y-4">
+            {d.features.map((f, i) => (
+              <div key={f.label}
+                className={`rounded-2xl p-6 md:p-8 ${i === 0 ? "bg-ink text-cloud" : "bg-cream"}`}>
+                <p className={`text-[11px] tracking-wider font-medium mb-2 ${i === 0 ? "text-accent-soft" : "text-accent"}`}>
                   {String(i + 1).padStart(2, "0")}
                 </p>
-                <h3 className={`text-xl font-bold mb-3 ${i === 0 ? "" : ""}`}>
-                  {feature.label}
-                </h3>
-                <p className={`leading-relaxed ${i === 0 ? "text-background/70 text-base" : "text-muted text-sm"}`}>
-                  {feature.description}
-                </p>
+                <h3 className="font-editorial text-xl font-bold mb-2">{f.label}</h3>
+                <p className={`text-sm leading-relaxed ${i === 0 ? "text-cloud/60" : "text-stone"}`}>{f.description}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* ハイライト */}
-        {destination.highlights && destination.highlights.length > 0 && (
-          <section className="mb-16">
-            <h2 className="text-2xl font-bold mb-6">見逃せないスポット</h2>
-            <div className="flex flex-wrap gap-3">
-              {destination.highlights.map((h) => (
-                <span key={h} className="bg-surface px-5 py-2.5 rounded-full text-sm font-medium">
-                  {h}
-                </span>
+        {/* Highlights */}
+        {d.highlights && d.highlights.length > 0 && (
+          <section className="mb-20">
+            <h2 className="font-editorial text-xl font-bold mb-5">見逃せないスポット</h2>
+            <div className="flex flex-wrap gap-2">
+              {d.highlights.map((h) => (
+                <span key={h} className="bg-cream border border-sand/40 px-4 py-2 rounded-full text-sm">{h}</span>
               ))}
             </div>
           </section>
         )}
 
-        {/* タグ */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-bold mb-6">この旅はこんな人に刺さる</h2>
+        {/* Tags */}
+        <section className="mb-20">
+          <h2 className="font-editorial text-xl font-bold mb-5">こんな人に刺さる</h2>
           <div className="flex flex-wrap gap-2">
-            {destination.tags.map((tag) => (
-              <Link
-                key={tag}
-                href={`/destinations?tag=${tag}`}
-                className="bg-surface hover:bg-border px-5 py-2 rounded-full text-sm transition-colors"
-              >
-                {tag}
-              </Link>
+            {d.tags.map((t) => (
+              <Link key={t} href={`/destinations?tag=${t}`} className="bg-cream hover:bg-sand/50 px-4 py-2 rounded-full text-sm transition-colors">{t}</Link>
             ))}
           </div>
         </section>
 
-        {/* 関連記事 */}
-        {relatedArticles.length > 0 && (
-          <section className="mb-16">
-            <h2 className="text-2xl font-bold mb-6">この場所が出てくる記事</h2>
-            <div className="space-y-4">
-              {relatedArticles.map((article) => (
-                <Link
-                  key={article.id}
-                  href={`/articles/${article.slug}`}
-                  className="group block bg-surface rounded-xl p-6 hover:bg-border/60 transition-colors"
-                >
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-xs font-medium text-accent bg-accent/10 px-3 py-1 rounded-full">
-                      {article.category}
-                    </span>
-                    <span className="text-xs text-muted">{article.targetType}</span>
-                  </div>
-                  <h3 className="font-bold text-lg group-hover:text-accent transition-colors">
-                    {article.title}
-                  </h3>
-                  <p className="text-sm text-muted mt-2">{article.description}</p>
+        {/* Articles */}
+        {articles.length > 0 && (
+          <section className="mb-20">
+            <div className="divider mb-4" />
+            <h2 className="font-editorial text-2xl font-bold mb-6">関連する記事</h2>
+            <div className="space-y-3">
+              {articles.map((a) => (
+                <Link key={a.id} href={`/articles/${a.slug}`} className="group block bg-cream rounded-xl p-5 lift">
+                  <span className="text-[11px] text-accent bg-accent/10 px-2.5 py-0.5 rounded-full">{a.category}</span>
+                  <h3 className="font-editorial font-bold mt-2 group-hover:text-accent transition-colors">{a.title}</h3>
+                  <p className="text-sm text-stone mt-1">{a.description}</p>
                 </Link>
               ))}
             </div>
           </section>
         )}
 
-        {/* しおりに追加CTA */}
-        <section className="text-center py-10 border-t border-border">
-          <p className="text-muted mb-4">
-            {destination.name}が気になったら
-          </p>
-          <Link
-            href={`/itinerary?add=${destination.id}`}
-            className="inline-block bg-accent text-white px-8 py-3 rounded-full font-medium hover:opacity-90 transition-opacity"
-          >
-            しおりに追加する
+        {/* CTA */}
+        <div className="text-center py-12 border-t border-sand/40">
+          <p className="text-stone text-sm mb-4">{d.name}が気になったら</p>
+          <Link href={`/itinerary?add=${d.id}`} className="pill pill-primary">
+            しおりに追加する <span className="ml-1">→</span>
           </Link>
-        </section>
+        </div>
       </div>
     </div>
   );

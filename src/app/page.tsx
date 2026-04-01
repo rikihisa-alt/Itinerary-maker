@@ -1,249 +1,142 @@
 import Link from "next/link";
-import { getAllDestinations, getFeaturedArticles } from "@/lib/contentLoader";
+import { getAllDestinations, getFeaturedArticles, getAllArticles } from "@/lib/contentLoader";
 import { AREA_LIST } from "@/lib/helpers";
+import { PhotoSlider, ArticleSlider } from "@/components/PhotoSlider";
 
 export default function Home() {
   const destinations = getAllDestinations();
-  const featuredArticles = getFeaturedArticles().slice(0, 3);
-  const picked = destinations.slice(0, 8);
+  const featuredArticles = getFeaturedArticles();
+  const allArticles = getAllArticles();
+  const hero = destinations[0];
 
   return (
     <>
-      {/* ── Hero ── */}
-      <section className="relative overflow-hidden bg-foreground text-background min-h-[85vh] flex items-center">
-        {/* Background pattern */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
-          backgroundSize: "40px 40px"
+      {/* ════════ HERO ════════ */}
+      <section className="relative bg-ink text-cloud overflow-hidden">
+        {/* BG texture */}
+        <div className="absolute inset-0 opacity-[0.04]" style={{
+          backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")"
         }} />
-        <div className="absolute top-20 right-10 w-72 h-72 bg-accent/20 rounded-full blur-[100px]" />
-        <div className="absolute bottom-20 left-10 w-96 h-96 bg-accent-light/10 rounded-full blur-[120px]" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/10 rounded-full blur-[150px]" />
 
-        <div className="relative max-w-6xl mx-auto px-5 md:px-8 py-20 md:py-0 w-full">
-          <div className="grid md:grid-cols-12 gap-12 items-center">
-            <div className="md:col-span-7">
-              <p className="animate-fade-up text-accent-light text-sm font-medium tracking-[0.2em] uppercase mb-8">
-                Travel Proposal × Guide × Itinerary
+        <div className="relative max-w-[1400px] mx-auto px-5 md:px-10">
+          <div className="min-h-[90vh] flex flex-col justify-end pb-16 md:pb-24">
+            <div className="anim-fade">
+              <p className="text-[11px] tracking-[0.3em] uppercase text-accent-soft mb-8">
+                Proposal — Guide — Itinerary
               </p>
-              <h1 className="animate-fade-up text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] mb-8">
-                「行きたい」が
+              <h1 className="text-display text-[clamp(2.5rem,8vw,6rem)] max-w-4xl mb-6">
+                行きたい場所は、
                 <br />
-                見つかる。
-                <br />
-                <span className="text-gradient">「行ける」に変わる。</span>
+                <span className="text-accent-soft">もう決まってる。</span>
               </h1>
-              <p className="animate-fade-up-delay text-base md:text-lg text-background/50 max-w-lg mb-10 leading-relaxed">
-                条件を入れるだけで、あなたに刺さる旅先を提案。
-                <br />
+              <p className="text-cloud/40 text-base md:text-lg max-w-xl mb-12 leading-relaxed">
+                あなたの条件に刺さる旅先を提案して、
+                <br className="hidden md:block" />
                 そのまま旅のしおりまで作れる。
               </p>
-              <div className="animate-fade-up-delay-2 flex flex-wrap gap-4">
-                <Link
-                  href="/result"
-                  className="group bg-accent text-white px-8 py-4 rounded-full font-medium hover:shadow-xl hover:shadow-accent/30 transition-all flex items-center gap-2"
-                >
-                  旅を提案してもらう
-                  <span className="group-hover:translate-x-1 transition-transform">→</span>
-                </Link>
-                <Link
-                  href="/destinations"
-                  className="border border-background/20 text-background/70 px-8 py-4 rounded-full hover:bg-background/5 transition-all"
-                >
-                  観光地を探す
-                </Link>
-              </div>
             </div>
-
-            {/* Right side: quick taste cards */}
-            <div className="md:col-span-5 hidden md:block">
-              <div className="space-y-4">
-                {picked.slice(0, 3).map((d, i) => (
-                  <Link
-                    key={d.id}
-                    href={`/destinations/${d.id}`}
-                    className={`block rounded-2xl p-5 transition-all hover:scale-[1.02] ${
-                      i === 0
-                        ? "bg-background/10 backdrop-blur-sm"
-                        : "bg-background/5 backdrop-blur-sm"
-                    }`}
-                    style={{ animationDelay: `${i * 0.1 + 0.3}s` }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs text-background/40 mb-1">{d.area} · {d.category[0]}</p>
-                        <p className={`font-bold ${i === 0 ? "text-lg" : "text-base"}`}>{d.name}</p>
-                        <p className="text-sm text-background/40 mt-1 line-clamp-1">{d.description.slice(0, 30)}...</p>
-                      </div>
-                      <span className="text-background/20 text-2xl">›</span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Area quick nav ── */}
-      <section className="border-b border-border">
-        <div className="max-w-6xl mx-auto px-5 md:px-8">
-          <div className="flex gap-1 overflow-x-auto no-scrollbar py-4">
-            {AREA_LIST.map((area) => (
-              <Link
-                key={area}
-                href={`/destinations?area=${area}`}
-                className="shrink-0 px-4 py-2 rounded-full text-sm text-muted hover:text-foreground hover:bg-surface transition-all"
-              >
-                {area}
+            <div className="anim-fade-d2 flex flex-wrap gap-4">
+              <Link href="/result" className="pill pill-primary text-base">
+                旅を提案してもらう <span className="ml-1">→</span>
               </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Featured destinations: 1つを主役に ── */}
-      <section className="max-w-6xl mx-auto px-5 md:px-8 py-16 md:py-24">
-        <div className="flex items-end justify-between mb-10 md:mb-14">
-          <div>
-            <p className="text-accent text-xs font-medium tracking-[0.15em] uppercase mb-3">Destinations</p>
-            <h2 className="text-2xl md:text-4xl font-bold">この条件なら、ここが刺さる</h2>
-          </div>
-          <Link href="/destinations" className="text-sm text-muted hover:text-accent transition-colors hidden sm:block">
-            すべて見る →
-          </Link>
-        </div>
-
-        {/* Main hero card */}
-        {picked[0] && (
-          <Link href={`/destinations/${picked[0].id}`} className="group block mb-8">
-            <div className="relative bg-foreground rounded-3xl overflow-hidden card-hover">
-              <div className="aspect-[21/9] md:aspect-[21/8] bg-gradient-to-br from-foreground via-foreground/95 to-foreground/80 relative">
-                <div className="absolute inset-0 opacity-10" style={{
-                  backgroundImage: "radial-gradient(circle at 70% 30%, rgba(196,93,62,0.3) 0%, transparent 50%)"
-                }} />
-                <div className="absolute inset-0 flex items-end">
-                  <div className="p-8 md:p-12 w-full">
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {picked[0].tags.slice(0, 4).map((tag) => (
-                        <span key={tag} className="text-xs bg-white/10 text-white/70 px-3 py-1 rounded-full backdrop-blur-sm">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex items-end justify-between">
-                      <div>
-                        <p className="text-white/40 text-sm mb-2">{picked[0].area} / {picked[0].prefecture}</p>
-                        <h3 className="text-3xl md:text-5xl font-bold text-white group-hover:text-accent-light transition-colors">
-                          {picked[0].name}
-                        </h3>
-                        <p className="text-white/50 mt-3 max-w-xl leading-relaxed text-sm md:text-base">
-                          {picked[0].description}
-                        </p>
-                      </div>
-                      <div className="hidden md:flex flex-col items-end gap-2 text-white/40 text-sm">
-                        <span>{picked[0].budgetRange}</span>
-                        <span>{picked[0].stayDuration[0]}</span>
-                        <span>{picked[0].bestSeason.join("・")}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <Link href="/destinations" className="pill pill-outline !border-cloud/20 !text-cloud/60 hover:!text-cloud">
+                観光地を探す
+              </Link>
             </div>
-          </Link>
+          </div>
+        </div>
+
+        {/* Hero bottom accent card */}
+        {hero && (
+          <div className="relative max-w-[1400px] mx-auto px-5 md:px-10 -mb-20 z-10">
+            <Link href={`/destinations/${hero.id}`} className="block group">
+              <div className="bg-cloud text-fg rounded-2xl p-6 md:p-8 md:flex md:items-center md:gap-8 shadow-2xl shadow-black/10 lift">
+                <div className="flex-1 mb-4 md:mb-0">
+                  <p className="text-[11px] tracking-[0.15em] uppercase text-accent mb-2">Today&apos;s Pick</p>
+                  <h2 className="font-editorial text-2xl md:text-3xl font-bold group-hover:text-accent transition-colors">
+                    {hero.name}
+                  </h2>
+                  <p className="text-stone text-sm mt-2 line-clamp-2 max-w-md">{hero.description}</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right hidden md:block">
+                    <p className="text-[11px] text-stone">{hero.area} / {hero.prefecture}</p>
+                    <p className="text-sm font-medium">{hero.budgetRange}</p>
+                  </div>
+                  <span className="w-10 h-10 bg-accent rounded-full flex items-center justify-center text-white text-lg shrink-0 group-hover:scale-110 transition-transform">
+                    →
+                  </span>
+                </div>
+              </div>
+            </Link>
+          </div>
         )}
+      </section>
 
-        {/* 2-3: Medium cards */}
-        <div className="grid md:grid-cols-5 gap-5 mb-5">
-          {picked.slice(1, 3).map((dest, i) => (
-            <Link
-              key={dest.id}
-              href={`/destinations/${dest.id}`}
-              className={`group card-hover ${i === 0 ? "md:col-span-3" : "md:col-span-2"}`}
-            >
-              <div className="bg-surface rounded-2xl overflow-hidden h-full">
-                <div className={`${i === 0 ? "aspect-[16/9]" : "aspect-[4/3]"} bg-foreground/5 relative`}>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                  <div className="absolute bottom-0 p-5 md:p-6">
-                    <p className="text-xs text-white/50 mb-1">{dest.area}</p>
-                    <h3 className="text-lg md:text-xl font-bold text-white group-hover:text-accent-light transition-colors">
-                      {dest.name}
-                    </h3>
-                  </div>
-                </div>
-                <div className="p-5">
-                  <p className="text-sm text-muted line-clamp-2">{dest.description}</p>
-                  <div className="flex gap-2 mt-3">
-                    {dest.tags.slice(0, 2).map((t) => (
-                      <span key={t} className="text-xs text-muted bg-background px-2 py-0.5 rounded">{t}</span>
-                    ))}
-                  </div>
-                </div>
-              </div>
+      {/* Spacer for overlap */}
+      <div className="h-28" />
+
+      {/* ════════ AREA NAV ════════ */}
+      <section className="max-w-[1400px] mx-auto px-5 md:px-10 mb-4">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar py-2">
+          {AREA_LIST.map((area) => (
+            <Link key={area} href={`/destinations?area=${area}`}
+              className="shrink-0 px-4 py-2 rounded-full text-[13px] text-stone hover:text-fg border border-sand/50 hover:border-fg/20 hover:bg-cream transition-all">
+              {area}
             </Link>
           ))}
-        </div>
-
-        {/* 4-8: Compact staggered grid */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          {picked.slice(3, 8).map((dest, i) => (
-            <Link
-              key={dest.id}
-              href={`/destinations/${dest.id}`}
-              className={`group card-hover ${i === 0 ? "col-span-2 md:col-span-2" : ""}`}
-            >
-              <div className={`bg-surface rounded-xl p-5 h-full ${i === 0 ? "md:flex md:items-center md:gap-5" : ""}`}>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs text-muted">{dest.area} · {dest.category[0]}</p>
-                    {dest.rating && <span className="text-xs font-medium text-accent">★ {dest.rating}</span>}
-                  </div>
-                  <h3 className="font-bold text-sm md:text-base group-hover:text-accent transition-colors">
-                    {dest.name}
-                  </h3>
-                  <p className="text-xs text-muted mt-1.5 line-clamp-2">{dest.description}</p>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        <div className="text-center mt-8 sm:hidden">
-          <Link href="/destinations" className="text-sm text-accent hover:underline">すべての観光地を見る →</Link>
         </div>
       </section>
 
-      {/* ── Proposal CTA ── */}
-      <section className="bg-warm">
-        <div className="max-w-6xl mx-auto px-5 md:px-8 py-16 md:py-24">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+      {/* ════════ PHOTO SLIDER ════════ */}
+      <section className="py-12 md:py-20">
+        <div className="max-w-[1400px] mx-auto mb-8 px-5 md:px-10">
+          <div className="flex items-end justify-between">
             <div>
-              <p className="text-accent text-xs font-medium tracking-[0.15em] uppercase mb-3">Travel Proposal</p>
-              <h2 className="text-2xl md:text-4xl font-bold mb-4 leading-tight">
-                4つの質問で、
+              <div className="divider mb-4" />
+              <h2 className="font-editorial text-2xl md:text-4xl font-bold">この条件なら、ここ。</h2>
+            </div>
+            <Link href="/destinations" className="text-[13px] text-stone hover:text-accent transition-colors hidden sm:block">
+              すべて見る →
+            </Link>
+          </div>
+        </div>
+        <PhotoSlider items={destinations.slice(0, 8)} />
+      </section>
+
+      {/* ════════ PROPOSAL CTA ════════ */}
+      <section className="bg-ink text-cloud overflow-hidden">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-10 py-20 md:py-28">
+          <div className="md:grid md:grid-cols-2 md:gap-16 md:items-center">
+            <div className="mb-12 md:mb-0">
+              <p className="text-[11px] tracking-[0.2em] uppercase text-accent-soft mb-6">Travel Diagnosis</p>
+              <h2 className="text-display text-3xl md:text-5xl mb-6">
+                4つ答えるだけで、
                 <br />
-                あなたの旅が見つかる。
+                旅が決まる。
               </h2>
-              <p className="text-muted leading-relaxed mb-8">
-                誰と行く？ どんな旅がしたい？ 気になることは？
-                <br />
-                それだけで、あなたに刺さる旅先とモデルコースを提案します。
+              <p className="text-cloud/40 leading-relaxed mb-10 max-w-sm">
+                誰と行く？ どんな気分？ 気になることは？
+                ──それだけで、あなた専用の旅先とモデルコースを提案。
               </p>
-              <Link
-                href="/result"
-                className="group inline-flex items-center gap-2 bg-accent text-white px-8 py-4 rounded-full font-medium hover:shadow-xl hover:shadow-accent/30 transition-all"
-              >
-                診断してみる
-                <span className="group-hover:translate-x-1 transition-transform">→</span>
+              <Link href="/result" className="pill pill-primary">
+                診断してみる <span className="ml-1">→</span>
               </Link>
             </div>
             <div className="space-y-3">
-              {["誰と行く？", "どんな旅がしたい？", "気になることは？", "エリアを選ぶ"].map((q, i) => (
-                <div key={q} className="bg-background rounded-xl p-5 flex items-center gap-4">
-                  <span className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center text-accent text-sm font-bold shrink-0">
-                    {i + 1}
-                  </span>
-                  <span className="font-medium">{q}</span>
+              {[
+                { n: "01", q: "誰と行く？", ex: "カップル / 一人 / 友達 / 家族" },
+                { n: "02", q: "どんな旅がしたい？", ex: "のんびり / アクティブ / グルメ" },
+                { n: "03", q: "気になることは？", ex: "温泉 / 自然 / アート / 歴史" },
+                { n: "04", q: "エリアを選ぶ", ex: "おまかせ / 関西 / 九州 / 北海道" },
+              ].map((step) => (
+                <div key={step.n} className="bg-cloud/5 border border-cloud/10 rounded-xl p-5 flex items-center gap-5">
+                  <span className="font-editorial text-2xl text-accent-soft font-bold w-10 shrink-0">{step.n}</span>
+                  <div>
+                    <p className="font-medium text-sm">{step.q}</p>
+                    <p className="text-[12px] text-cloud/30 mt-0.5">{step.ex}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -251,98 +144,44 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Articles ── */}
-      <section className="max-w-6xl mx-auto px-5 md:px-8 py-16 md:py-24">
-        <div className="flex items-end justify-between mb-10 md:mb-14">
-          <div>
-            <p className="text-accent text-xs font-medium tracking-[0.15em] uppercase mb-3">Articles</p>
-            <h2 className="text-2xl md:text-4xl font-bold">読むと旅に出たくなる</h2>
-          </div>
-          <Link href="/articles" className="text-sm text-muted hover:text-accent transition-colors hidden sm:block">
-            すべて見る →
-          </Link>
-        </div>
-
-        <div className="space-y-5">
-          {featuredArticles.map((article, i) => (
-            <Link key={article.id} href={`/articles/${article.slug}`} className="group block">
-              <article
-                className={`rounded-2xl card-hover transition-all ${
-                  i === 0
-                    ? "bg-foreground text-background p-8 md:p-12"
-                    : "bg-surface p-6 md:p-8"
-                }`}
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <span className={`text-xs font-medium px-3 py-1 rounded-full ${
-                    i === 0 ? "bg-accent text-white" : "bg-accent/10 text-accent"
-                  }`}>
-                    {article.category}
-                  </span>
-                  <span className={`text-xs ${i === 0 ? "text-background/40" : "text-muted"}`}>
-                    {article.targetType}
-                  </span>
-                  {article.readingTime && (
-                    <span className={`text-xs ${i === 0 ? "text-background/40" : "text-muted"}`}>
-                      {article.readingTime}分
-                    </span>
-                  )}
-                </div>
-                <h3 className={`font-bold leading-snug transition-colors ${
-                  i === 0
-                    ? "text-2xl md:text-3xl lg:text-4xl group-hover:text-accent-light"
-                    : "text-xl md:text-2xl group-hover:text-accent"
-                }`}>
-                  {article.title}
-                </h3>
-                <p className={`mt-3 leading-relaxed ${
-                  i === 0 ? "text-background/50 text-base max-w-2xl" : "text-muted"
-                }`}>
-                  {article.description}
-                </p>
-                <div className="flex flex-wrap gap-2 mt-4">
-                  {article.tags.slice(0, 4).map((tag) => (
-                    <span key={tag} className={`text-xs px-2 py-1 rounded ${
-                      i === 0 ? "bg-background/10 text-background/50" : "bg-background text-muted"
-                    }`}>
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              </article>
+      {/* ════════ ARTICLES SLIDER ════════ */}
+      <section className="py-16 md:py-24">
+        <div className="max-w-[1400px] mx-auto mb-8 px-5 md:px-10">
+          <div className="flex items-end justify-between">
+            <div>
+              <div className="divider mb-4" />
+              <h2 className="font-editorial text-2xl md:text-4xl font-bold">読むと、出たくなる。</h2>
+            </div>
+            <Link href="/articles" className="text-[13px] text-stone hover:text-accent transition-colors hidden sm:block">
+              すべて見る →
             </Link>
-          ))}
+          </div>
         </div>
-
-        <div className="text-center mt-8 sm:hidden">
-          <Link href="/articles" className="text-sm text-accent hover:underline">すべての記事を見る →</Link>
-        </div>
+        <ArticleSlider articles={allArticles} />
       </section>
 
-      {/* ── Itinerary CTA ── */}
-      <section className="bg-surface">
-        <div className="max-w-6xl mx-auto px-5 md:px-8 py-16 md:py-24 text-center">
-          <p className="text-accent text-xs font-medium tracking-[0.15em] uppercase mb-3">Itinerary</p>
-          <h2 className="text-2xl md:text-4xl font-bold mb-4">
-            この旅、どう回るのが気持ちいい？
+      {/* ════════ SECOND SLIDER ════════ */}
+      <section className="pb-16 md:pb-24">
+        <PhotoSlider items={destinations.slice(8, 15)} label="More destinations" />
+      </section>
+
+      {/* ════════ ITINERARY CTA ════════ */}
+      <section className="bg-cream">
+        <div className="max-w-[1400px] mx-auto px-5 md:px-10 py-20 md:py-28 text-center">
+          <div className="divider mx-auto mb-6" />
+          <h2 className="text-display text-3xl md:text-5xl mb-5">
+            しおりを、作ろう。
           </h2>
-          <p className="text-muted text-base md:text-lg mb-10 max-w-xl mx-auto leading-relaxed">
+          <p className="text-stone text-base max-w-md mx-auto mb-10 leading-relaxed">
             観光地を選んでタイムラインに並べるだけ。
             <br />
             あなただけの旅のしおりが完成する。
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link
-              href="/itinerary"
-              className="group inline-flex items-center gap-2 bg-foreground text-background px-8 py-4 rounded-full font-medium hover:shadow-xl transition-all"
-            >
-              しおりを作る
-              <span className="group-hover:translate-x-1 transition-transform">→</span>
+            <Link href="/itinerary" className="pill pill-primary">
+              しおりを作る <span className="ml-1">→</span>
             </Link>
-            <Link
-              href="/result"
-              className="inline-flex items-center gap-2 border border-border text-muted px-8 py-4 rounded-full hover:text-foreground hover:border-foreground/30 transition-all"
-            >
+            <Link href="/result" className="pill pill-outline">
               まず提案してもらう
             </Link>
           </div>
