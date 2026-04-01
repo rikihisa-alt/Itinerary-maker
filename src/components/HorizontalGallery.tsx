@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Spot } from "@/types/destination";
 
 const W = [420, 280, 360, 300, 400, 320, 380, 260, 340, 290, 410, 350];
@@ -19,12 +20,17 @@ export function HorizontalGallery({ items, title }: { items: Spot[]; title: stri
             style={{ width: `${W[i % W.length]}px`, minWidth: `${W[i % W.length]}px` }}>
             <div className="relative rounded-[8px] overflow-hidden outline outline-1 outline-g2/40"
               style={{ aspectRatio: AR[i % AR.length] }}>
-              <div className="absolute inset-0 bg-gradient-to-br from-accent/30 via-ink/10 to-ink/30 transition-transform duration-500 group-hover:scale-[1.05]" />
+              <Image
+                src={s.images[0]}
+                alt={s.title}
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-[1.05]"
+                sizes={`${W[i % W.length]}px`}
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-              {/* Text — hidden by default, slide up on hover */}
               <div className="absolute inset-x-0 bottom-0 p-[16px] translate-y-[8px] opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 delay-150">
-                <div className="bg-black/20 backdrop-blur-sm rounded-[6px] p-[12px]">
-                  <p className="mono text-[10px] text-white/40 tracking-[0.1em] uppercase">{s.area}</p>
+                <div className="bg-black/30 backdrop-blur-sm rounded-[6px] p-[12px]">
+                  <p className="mono text-[10px] text-white/50 tracking-[0.1em] uppercase">{s.area}</p>
                   <p className="serif text-[16px] text-white font-bold leading-[1.3] mt-[2px]">{s.title}</p>
                   <p className="text-[11px] text-white/40 mt-[4px] line-clamp-1">{s.description}</p>
                 </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getAllSpots, getSpotById, getNearbySpots } from "@/lib/contentLoader";
 
@@ -9,27 +10,27 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const s = getSpotById(id);
   if (!s) notFound();
   const nearby = getNearbySpots(id);
-
   const crowd = s.crowdLevel === "low" ? "低い" : s.crowdLevel === "medium" ? "ふつう" : "高い";
 
   return (
     <div>
       {/* Hero — fullscreen photo */}
       <section className="relative h-[70vh] min-h-[400px] bg-ink overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/30 via-ink/10 to-ink/40" />
+        <Image src={s.images[0]} alt={s.title} fill className="object-cover" priority sizes="100vw" />
+        <div className="absolute inset-0 bg-black/35" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="relative h-full max-w-[1440px] mx-auto px-[20px] md:px-[48px] flex flex-col justify-end pb-[44px] md:pb-[60px]">
-          <p className="mono text-[10px] tracking-[0.15em] uppercase text-white/25 mb-[10px]">
-            <Link href="/destinations" className="hover:text-white/50 transition-colors">Destinations</Link>
+          <p className="mono text-[10px] tracking-[0.15em] uppercase text-white/30 mb-[10px]">
+            <Link href="/destinations" className="hover:text-white/60 transition-colors">Destinations</Link>
             <span className="mx-[5px]">/</span>{s.area}
           </p>
           <h1 className="serif text-[36px] md:text-[56px] lg:text-[72px] text-white font-bold leading-[1.1] tracking-[-0.03em] mb-[8px]">{s.title}</h1>
-          <p className="text-[14px] text-white/30 max-w-[400px]">{s.description}</p>
+          <p className="text-[14px] text-white/40 max-w-[400px]">{s.description}</p>
         </div>
       </section>
 
       <div className="max-w-[720px] mx-auto px-[20px] md:px-[36px]">
-        {/* Info grid — no cards, just lines */}
+        {/* Info */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-x-[20px] gap-y-[14px] py-[28px] border-b border-g1 mb-[56px]">
           {[
             { l: "滞在目安", v: `${s.stayDuration}分` },
@@ -46,13 +47,18 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           ))}
         </div>
 
-        {/* Section 1: 概要 */}
+        {/* 2枚目の画像（あれば） */}
+        {s.images[1] && (
+          <div className="relative rounded-[8px] overflow-hidden mb-[56px]" style={{ aspectRatio: "16/9" }}>
+            <Image src={s.images[1]} alt={`${s.title} 2`} fill className="object-cover" sizes="720px" />
+          </div>
+        )}
+
         <section className="mb-[64px]">
           <h2 className="serif text-[22px] font-bold mb-[18px]">概要</h2>
           <p className="text-[14px] leading-[2.1] text-g5">{s.longDescription}</p>
         </section>
 
-        {/* Section 2: 見どころ — 主役+脇役 */}
         <section className="mb-[64px]">
           <h2 className="serif text-[22px] font-bold mb-[24px]">見どころ</h2>
           <div className="space-y-[12px]">
@@ -69,17 +75,17 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </div>
         </section>
 
-        {/* Section 3: ハイライト */}
-        <section className="mb-[56px]">
-          <h3 className="text-[13px] font-medium text-g4 mb-[10px]">スポット</h3>
-          <div className="flex flex-wrap gap-[6px]">
-            {s.highlights.map((h) => (
-              <span key={h} className="text-[12px] border border-g2 px-[12px] py-[5px] rounded-full">{h}</span>
-            ))}
-          </div>
-        </section>
+        {s.highlights.length > 0 && (
+          <section className="mb-[56px]">
+            <h3 className="text-[13px] font-medium text-g4 mb-[10px]">スポット</h3>
+            <div className="flex flex-wrap gap-[6px]">
+              {s.highlights.map((h) => (
+                <span key={h} className="text-[12px] border border-g2 px-[12px] py-[5px] rounded-full">{h}</span>
+              ))}
+            </div>
+          </section>
+        )}
 
-        {/* Tags */}
         <section className="mb-[56px]">
           <h3 className="text-[13px] font-medium text-g4 mb-[10px]">タグ</h3>
           <div className="flex flex-wrap gap-[5px]">
@@ -89,24 +95,26 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </div>
         </section>
 
-        {/* Nearby */}
         {nearby.length > 0 && (
           <section className="mb-[56px]">
             <h2 className="serif text-[22px] font-bold mb-[18px]">周辺スポット</h2>
-            <div className="border-t border-g1">
+            <div className="space-y-[12px]">
               {nearby.map((n) => (
-                <Link key={n.id} href={`/destinations/${n.id}`}
-                  className="group block py-[14px] border-b border-g1/60 hover:bg-white/40 transition-colors">
-                  <p className="mono text-[10px] text-g3 mb-[2px]">{n.area}</p>
-                  <h3 className="serif text-[16px] font-bold group-hover:text-accent transition-colors">{n.title}</h3>
-                  <p className="text-[12px] text-g4 mt-[2px]">{n.description}</p>
+                <Link key={n.id} href={`/destinations/${n.id}`} className="group flex gap-[14px] items-center">
+                  <div className="w-[72px] h-[72px] rounded-[6px] overflow-hidden shrink-0 relative">
+                    <Image src={n.images[0]} alt={n.title} fill className="object-cover" sizes="72px" />
+                  </div>
+                  <div>
+                    <p className="mono text-[10px] text-g3 mb-[1px]">{n.area}</p>
+                    <h3 className="serif text-[16px] font-bold group-hover:text-accent transition-colors">{n.title}</h3>
+                    <p className="text-[12px] text-g4 mt-[1px] line-clamp-1">{n.description}</p>
+                  </div>
                 </Link>
               ))}
             </div>
           </section>
         )}
 
-        {/* CTA */}
         <div className="border-t border-g1 pt-[36px] pb-[80px]">
           <p className="text-[12px] text-g4 mb-[12px]">{s.title}が気になったら</p>
           <Link href={`/itinerary?add=${s.id}`}
