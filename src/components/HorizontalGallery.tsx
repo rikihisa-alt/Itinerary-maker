@@ -3,7 +3,7 @@
 import { useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Spot } from "@/types/destination";
+import { Spot } from "@/types/spot";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
