@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "aidesigner": {
+      "type": "http",
+      "url": "https://api.aidesigner.ai/api/v1/mcp",
+      "headers": {
+        "Authorization": "Bearer gp_60a18eb5298cd5912febbcb9d8b91beab8bced68fc5a5524792f29fb22368377"
+      }
+    }
+  }
+}

@@ -74,7 +74,7 @@ export const prefectures: Prefecture[] = [
   {
     id: "nara", name: "奈良県", nameEn: "Nara", region: "近畿", regionId: "kinki",
     description: "鹿と大仏と桜。1300年の歴史がのんびり息づく。",
-    coverImage: "https://images.unsplash.com/photo-1624601573012-efb68f3f150a?w=800&q=80",
+    coverImage: "https://images.unsplash.com/photo-1522383225653-ed111181a951?w=800&q=80",
     areas: [
       { id: "nara-city", name: "奈良市内", prefectureId: "nara" },
       { id: "yoshino-area", name: "吉野", prefectureId: "nara" },
