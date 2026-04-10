@@ -119,14 +119,14 @@ export default function CreatePage() {
                 旅のスタイルに合わせて、最適なプランを提案します。
               </p>
 
-              <div className="grid grid-cols-2 gap-[10px] mb-[32px] text-left">
+              <div className="grid grid-cols-2 gap-[10px] mb-[32px]">
                 {TRAVELER_OPTIONS.map((opt) => {
                   const active = s.travelers.type === opt.type;
                   return (
                     <button
                       key={opt.type}
                       onClick={() => s.setTravelers({ type: opt.type, count: opt.defaultCount })}
-                      className={`text-left rounded-[8px] border p-[18px] transition-all duration-200 ${
+                      className={`text-center rounded-[8px] border p-[18px] transition-all duration-200 ${
                         active
                           ? "border-accent bg-accent/[0.04]"
                           : "border-g2/60 hover:border-g3"
@@ -195,7 +195,7 @@ export default function CreatePage() {
                     <button
                       key={pref.id}
                       onClick={() => s.togglePrefecture(pref.id)}
-                      className={`text-left rounded-[8px] border p-[18px] transition-all duration-200 ${
+                      className={`text-center rounded-[8px] border p-[18px] transition-all duration-200 ${
                         active
                           ? "border-accent bg-accent/[0.04]"
                           : "border-g2/60 hover:border-g3"
