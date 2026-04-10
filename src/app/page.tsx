@@ -74,8 +74,8 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-10 gap-[40px] lg:gap-[96px] items-center">
           <div className="lg:col-span-3 flex flex-col justify-center order-2 lg:order-1 pt-[24px] lg:pt-0">
             <span className="mono text-[12px] tracking-[0.2em] text-g4 mb-[20px] uppercase block">The Philosophy</span>
-            <h2 className="serif text-[24px] md:text-[32px] leading-[1.4] text-accent mb-[24px] font-light max-w-[320px]">
-              余白のある旅が、心を豊かにする。
+            <h2 className="serif text-[24px] md:text-[32px] leading-[1.4] text-accent mb-[24px] font-light">
+              余白のある旅が、<br />心を豊かにする。
             </h2>
             <div className="w-full h-[1px] bg-g2 mb-[24px]" />
             <p className="text-[14px] md:text-[15px] leading-[1.9] text-g5 mb-[32px] tracking-wide">

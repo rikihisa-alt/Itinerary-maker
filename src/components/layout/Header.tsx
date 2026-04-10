@@ -12,9 +12,6 @@ export function Header() {
         <Link href="/" className="pointer-events-auto serif text-[18px] tracking-[0.1em] text-white hidden md:block">
           旅のしおり屋さん
         </Link>
-        <div className="pointer-events-auto mono text-[11px] tracking-[0.2em] font-light text-white/50 hidden md:block">
-          EST. 2024
-        </div>
         <button
           onClick={() => setOpen(!open)}
           className="pointer-events-auto ml-auto w-[40px] h-[40px] flex flex-col justify-center gap-[5px] items-end group text-white"
