@@ -76,7 +76,7 @@ export default function CreatePage() {
   const progress = ((s.step + 1) / STEP_COUNT) * 100;
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="min-h-screen bg-bg flex flex-col">
       {/* ── progress bar ── */}
       <div className="fixed top-0 left-0 right-0 z-50 h-[3px] bg-g1">
         <motion.div
@@ -86,7 +86,7 @@ export default function CreatePage() {
         />
       </div>
 
-      <div className="max-w-[640px] mx-auto px-[20px] md:px-[36px]">
+      <div className="max-w-[640px] w-full mx-auto px-[20px] md:px-[36px] flex-1 flex flex-col justify-center">
         {/* ── back button ── */}
         {s.step > 0 && (
           <motion.button
@@ -109,7 +109,7 @@ export default function CreatePage() {
               animate="center"
               exit="exit"
               transition={{ duration: 0.35, ease: "easeOut" }}
-              className="pt-[120px] pb-[60px] text-center"
+              className="py-[40px] text-center"
             >
               <p className="mono text-[10px] tracking-[0.2em] uppercase text-g4 mb-[12px]">Step 1 / {STEP_COUNT}</p>
               <h1 className="serif text-[40px] font-bold tracking-[-0.03em] leading-[1.15] mb-[8px]">
@@ -178,7 +178,7 @@ export default function CreatePage() {
               animate="center"
               exit="exit"
               transition={{ duration: 0.35, ease: "easeOut" }}
-              className="pt-[120px] pb-[60px]"
+              className="py-[40px] text-center"
             >
               <p className="mono text-[10px] tracking-[0.2em] uppercase text-g4 mb-[12px]">Step 2 / {STEP_COUNT}</p>
               <h1 className="serif text-[40px] font-bold tracking-[-0.03em] leading-[1.15] mb-[8px]">
@@ -233,7 +233,7 @@ export default function CreatePage() {
               animate="center"
               exit="exit"
               transition={{ duration: 0.35, ease: "easeOut" }}
-              className="pt-[120px] pb-[60px]"
+              className="py-[40px] text-center"
             >
               <p className="mono text-[10px] tracking-[0.2em] uppercase text-g4 mb-[12px]">Step 3 / {STEP_COUNT}</p>
               <h1 className="serif text-[40px] font-bold tracking-[-0.03em] leading-[1.15] mb-[8px]">
@@ -280,7 +280,7 @@ export default function CreatePage() {
               animate="center"
               exit="exit"
               transition={{ duration: 0.35, ease: "easeOut" }}
-              className="pt-[120px] pb-[60px]"
+              className="py-[40px] text-center"
             >
               <p className="mono text-[10px] tracking-[0.2em] uppercase text-g4 mb-[12px]">Step 4 / {STEP_COUNT}</p>
               <h1 className="serif text-[40px] font-bold tracking-[-0.03em] leading-[1.15] mb-[8px]">
