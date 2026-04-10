@@ -109,7 +109,7 @@ export default function CreatePage() {
               animate="center"
               exit="exit"
               transition={{ duration: 0.35, ease: "easeOut" }}
-              className="pt-[120px] pb-[60px]"
+              className="pt-[120px] pb-[60px] text-center"
             >
               <p className="mono text-[10px] tracking-[0.2em] uppercase text-g4 mb-[12px]">Step 1 / {STEP_COUNT}</p>
               <h1 className="serif text-[40px] font-bold tracking-[-0.03em] leading-[1.15] mb-[8px]">
@@ -119,7 +119,7 @@ export default function CreatePage() {
                 旅のスタイルに合わせて、最適なプランを提案します。
               </p>
 
-              <div className="grid grid-cols-2 gap-[10px] mb-[32px]">
+              <div className="grid grid-cols-2 gap-[10px] mb-[32px] text-left">
                 {TRAVELER_OPTIONS.map((opt) => {
                   const active = s.travelers.type === opt.type;
                   return (
@@ -143,7 +143,7 @@ export default function CreatePage() {
 
               {/* count adjuster */}
               {s.travelers.type !== "solo" && (
-                <div className="flex items-center gap-[16px] mb-[48px]">
+                <div className="flex items-center justify-center gap-[16px] mb-[48px]">
                   <p className="mono text-[11px] text-g4">人数</p>
                   <button
                     onClick={() => s.setTravelers({ ...s.travelers, count: Math.max(2, s.travelers.count - 1) })}
