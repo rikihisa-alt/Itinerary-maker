@@ -115,30 +115,24 @@ export default function Home() {
               </Link>
             </div>
           </div>
-          <div className="hidden lg:block">
-            <div className="bg-white/[0.04] border border-white/[0.08] rounded-[16px] p-[32px] md:p-[40px] relative overflow-hidden">
-              <div className="absolute -top-[96px] -right-[96px] w-[256px] h-[256px] bg-gold/10 blur-[80px] rounded-full pointer-events-none" />
-              <div className="relative z-10 flex flex-col gap-[28px]">
-                {[
-                  { n: "01", q: "目的地の選択", d: "訪れたい都道府県やエリアを選びます。" },
-                  { n: "02", q: "条件の設定", d: "日程、移動手段、予算感などを入力します。" },
-                  { n: "03", q: "こだわりの追加", d: "「温泉に入りたい」「絶景が見たい」などの気分を追加。" },
-                  { n: "04", q: "ルートの自動生成", d: "最適な移動時間と滞在時間を計算し、旅程を組み上げます。" },
-                  { n: "05", q: "しおりの完成", d: "美しいデザインのデジタルしおりが発行されます。" },
-                ].map((item, i) => (
-                  <div key={i}>
-                    {i > 0 && <div className="w-full h-[1px] bg-gradient-to-r from-white/10 to-transparent mb-[28px]" />}
-                    <div className="flex items-start gap-[20px] group">
-                      <span className="mono text-[12px] text-gold tracking-[0.15em] mt-[2px] opacity-60 group-hover:opacity-100 transition-opacity">{item.n}</span>
-                      <div>
-                        <h4 className={`text-[15px] font-medium mb-[4px] ${i === 4 ? "text-gold" : "text-white"}`}>{item.q}</h4>
-                        <p className="text-[13px] text-g3 leading-[1.7]">{item.d}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+          <div className="hidden lg:flex flex-col gap-[12px]">
+            {[
+              { n: "01", q: "目的地の選択", d: "都道府県やエリア" },
+              { n: "02", q: "条件の設定", d: "日程・予算・移動手段" },
+              { n: "03", q: "こだわりの追加", d: "温泉・絶景・グルメ" },
+              { n: "04", q: "ルートの自動生成", d: "最適な旅程を計算" },
+              { n: "05", q: "しおりの完成", d: "デジタルしおり発行" },
+            ].map((item, i) => (
+              <div key={i}
+                className="flex items-center gap-[20px] px-[28px] py-[20px] rounded-[8px] bg-white/[0.06] backdrop-blur-[12px] border border-white/[0.1] hover:bg-white/[0.1] hover:border-white/[0.18] transition-all duration-300 cursor-default group"
+              >
+                <span className="mono text-[14px] text-gold/50 group-hover:text-gold tracking-[0.1em] transition-colors w-[28px] shrink-0">{item.n}</span>
+                <div className="flex-1 min-w-0">
+                  <h4 className={`text-[14px] font-medium ${i === 4 ? "text-gold" : "text-white/80 group-hover:text-white"} transition-colors`}>{item.q}</h4>
+                </div>
+                <span className="text-[11px] text-white/20 group-hover:text-white/35 transition-colors shrink-0">{item.d}</span>
               </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
