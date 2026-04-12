@@ -57,7 +57,7 @@ export const kinkiSpots: Spot[] = [
     id: "arashiyama", title: "嵐山・竹林の小径", location: "京都市右京区",
     prefecture: "京都府", prefectureId: "kyoto", area: "嵐山", areaId: "arashiyama-area",
     category: "park",
-    images: ["https://images.unsplash.com/photo-1580619305218-8423a7ef79b4?w=1200&q=80"],
+    images: ["https://images.unsplash.com/photo-1528164344705-47542687000d?w=1200&q=80"],
     description: "竹の音だけが聞こえる。嵐山の奥に、別世界がある。",
     longDescription: "竹林の小径は朝7時前なら人がいない。天龍寺の裏手から入って、風が竹を揺らす音だけを聴く。嵯峨野トロッコ列車は片道だけ乗るのが正解。行きはトロッコ、帰りは保津川下り。渡月橋は夕方が美しい。山の稜線が夕日で赤く染まる。",
     tags: ["自然", "早朝", "写真映え", "カップル"],
