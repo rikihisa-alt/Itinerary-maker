@@ -97,13 +97,13 @@ export default function Home() {
 
       {/* ═══ NAVY CTA SECTION ═══ */}
       <section className="relative bg-accent text-bg overflow-hidden mt-[48px] mb-[96px] noise">
-        <div className="relative z-10 px-[20px] md:px-[48px] lg:px-[96px] py-[100px] md:py-[140px] grid grid-cols-1 lg:grid-cols-2 gap-[48px] lg:gap-[100px] items-center">
+        <div className="relative z-10 px-[20px] md:px-[48px] lg:px-[64px] py-[100px] md:py-[140px] max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-[48px] lg:gap-[64px] items-center">
           <div>
             <h2 className="serif text-[28px] md:text-[44px] leading-[1.3] text-bg mb-[32px] font-light">
               条件を入れるだけで、<br />旅のしおりが完成する。
             </h2>
             <div className="w-[48px] h-[1px] bg-gold mb-[32px]" />
-            <p className="text-[15px] leading-[2] text-g1 mb-[40px] max-w-[440px] font-light">
+            <p className="text-[15px] leading-[2] text-g1 mb-[40px] max-w-[520px] font-light">
               行き先、予算、そしてどんな気分で過ごしたいか。いくつかの質問に答えるだけで、プロのキュレーターが構成したような美しい旅のしおりが生成されます。
             </p>
             <div className="flex flex-col sm:flex-row gap-[16px]">
